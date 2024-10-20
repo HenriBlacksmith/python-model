@@ -17,11 +17,31 @@ dependencies = [
     "uvicorn>=0.32.0",
 ]
 
+# Ruff linter configuration
+# https://docs.astral.sh/ruff/linter/
+[tool.ruff.lint]
+
+# https://docs.astral.sh/ruff/settings/#lint_select
+select = [
+  "F",       # pyflakes: https://docs.astral.sh/ruff/rules/#pyflakes-f
+  "E", "W",  # pycodestyle: https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "N",       # pep8-naming: https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "UP",      # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
+  "B",       # flake8-bugbear: https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+  "A",       # flake8-builtins: https://docs.astral.sh/ruff/rules/#flake8-builtins-a
+  "DTZ",     # flake8-datetimez: https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
+  "T10",     # flake8-debugger: https://docs.astral.sh/ruff/rules/#flake8-debugger-t10
+  "ISC",     # flake8-implicit-str-concat: https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
+  "INP",     # flake8-no-pep420: https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp
+  "T20",     # flake8-print: https://docs.astral.sh/ruff/rules/#flake8-print-t20
+  "FLY",     # flynt: https://docs.astral.sh/ruff/rules/#flynt-fly
+]
+
 [tool.uv]
 dev-dependencies = [
     "black==23.3.0",
     "isort==5.12.0",
     "mypy==1.2.0",
     "pylint==2.17.3",
-    "ruff==0.0.263"
+    "ruff==0.7.0",
 ]
