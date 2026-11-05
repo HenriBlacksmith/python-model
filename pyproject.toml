@@ -1,5 +1,5 @@
 [project]
-name = "sample"
+name = "python-model"
 version = "0.0.1"
 maintainers = [
   {name = "John Doe", email = "john.doe@example.com"}
@@ -7,10 +7,10 @@ maintainers = [
 keywords = ["sample"]
 description = "Sample project for Python"
 readme = "README.md"
-requires-python = ">=3.13.0"
+requires-python = ">=3.15.0"
 classifiers = [
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.15",
 ]
 dependencies = [
     "fastapi>=0.115.2",
@@ -24,6 +24,7 @@ dependencies = [
 
 # https://docs.astral.sh/ruff/settings/#lint_select
 select = [
+  "I",       # isort: https://docs.astral.sh/ruff/rules/?linter=isort-i
   "F",       # pyflakes: https://docs.astral.sh/ruff/rules/#pyflakes-f
   "E", "W",  # pycodestyle: https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
   "N",       # pep8-naming: https://docs.astral.sh/ruff/rules/#pep8-naming-n
@@ -38,11 +39,15 @@ select = [
   "FLY",     # flynt: https://docs.astral.sh/ruff/rules/#flynt-fly
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "black==23.3.0",
     "isort==5.12.0",
     "mypy==1.2.0",
     "pylint==2.17.3",
     "ruff==0.7.0",
+    "ty>=0.0.96",
 ]
+
+[tool.ty.environment]
+python = ".venv"

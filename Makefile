@@ -1,12 +1,13 @@
+UV := uv run
+
 fmt:
-	@black .
-	@isort .
-	@ruff check --fix .
+	@$(UV) black .
+	@$(UV) ruff check --fix .
 
 lint:
-	@black --check --diff .
-	@isort --check --diff .
-	@ruff check --fix .
+	@$(UV) black --check --diff .
+	@$(UV) ruff check .
+	@$(UV) ty check .
 
 build:
 	@docker build .
