@@ -41,6 +41,8 @@ select = [
 
 [dependency-groups]
 dev = [
+    "httpx2>=2.16.0",
+    "pytest>=9.2.0",
     "ruff==0.17.4",
     "ty>=0.0.96",
 ]
