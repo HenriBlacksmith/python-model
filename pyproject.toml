@@ -42,7 +42,6 @@ select = [
 [dependency-groups]
 dev = [
     "black==23.3.0",
-    "mypy==1.2.0",
     "ruff==0.7.0",
     "ty>=0.0.96",
 ]
