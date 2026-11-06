@@ -9,5 +9,8 @@ lint:
 	@$(UV) ruff check .
 	@$(UV) ty check .
 
+test:
+	@$(UV) pytest .
+
 build:
 	@docker build .
