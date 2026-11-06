@@ -11,7 +11,7 @@ def _get_application() -> FastAPI:
         title=settings.name,
         telemetry=TelemetryConfig(
             auto_configure=True,
-            tracing=False,
+            tracing=True,
             metrics=False,
             logs=True,
         ),

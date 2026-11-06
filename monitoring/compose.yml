@@ -1,0 +1,34 @@
+services:
+    grafana:
+      image: grafana/grafana
+      container_name: grafana-observer
+      restart: unless-stopped
+      ports:
+        - 3000:3000
+      volumes:
+        - ./grafana/provisioning:/etc/grafana/provisioning
+      environment:
+        - GF_SECURITY_ADMIN_USER=admin
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+    otel-collector:
+      image: otel/opentelemetry-collector-contrib:latest
+      container_name: otel-collector
+      restart: unless-stopped
+      command: ["--config=/etc/otel-collector-config.yaml"]
+      volumes:
+        - ./otel-collection-config.yaml:/etc/otel-collector-config.yaml
+      ports:
+        - "4317:4317"  # OTLP gRPC receiver
+        - "4318:4318"  # OTLP HTTP receiver
+      depends_on:
+        - tempo # Export to Tempo
+    tempo:
+        image: grafana/tempo:latest
+        container_name: tempo
+        restart: unless-stopped
+        command: ["-config.file=/etc/tempo.yml"]
+        volumes:
+          - ./tempo.yml:/etc/tempo.yml
+        ports:
+          - "3200:3200"   # Tempo UI
+          - "4317"        # OTLP gRPC. Port is mapped by otel-collector
