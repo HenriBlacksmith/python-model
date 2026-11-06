@@ -1,11 +1,11 @@
 UV := uv run
 
 fmt:
-	@$(UV) black .
+	@$(UV) ruff format .
 	@$(UV) ruff check --fix .
 
 lint:
-	@$(UV) black --check --diff .
+	@$(UV) ruff format --check --diff .
 	@$(UV) ruff check .
 	@$(UV) ty check .
 
