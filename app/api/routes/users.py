@@ -1,0 +1,48 @@
+from uuid import UUID
+
+from fastapi import APIRouter, status
+
+from app.api.dependencies.controllers import UsersControllerDepends
+from app.api.models.users import UserRequest, UserResponse
+
+router = APIRouter()
+
+
+@router.post("/users", tags=["Users"], status_code=status.HTTP_201_CREATED)
+async def create_user(
+    users_controller: UsersControllerDepends, user: UserRequest
+) -> UserResponse:
+    """
+    Create a new user in the system.
+    """
+    user_id = users_controller.create_user(user.username)
+    return UserResponse(user_id=user_id, username=user.username)
+
+
+@router.get("/users/{user_id}", tags=["Users"])
+async def get_user(
+    users_controller: UsersControllerDepends, user_id: UUID
+) -> UserResponse:
+    """
+    Get a user by ID.
+    """
+    user = users_controller.get_user(user_id)
+    return UserResponse(user_id=user_id, username=user)
+
+
+@router.put("/users/{user_id}", tags=["Users"])
+async def update_user(
+    users_controller: UsersControllerDepends, user_id: UUID, user: UserRequest
+) -> None:
+    """
+    Update a user's username by ID.
+    """
+    users_controller.update_user(user_id, user.username)
+
+
+@router.delete("/users/{user_id}", tags=["Users"])
+async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:
+    """
+    Delete a user by ID.
+    """
+    users_controller.delete_user(user_id)

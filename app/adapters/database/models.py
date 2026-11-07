@@ -1,6 +1,13 @@
-from sqlmodel import Field, SQLModel
+from uuid import UUID
+
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
-class User(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
+class Base(DeclarativeBase): ...
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    name: Mapped[str]

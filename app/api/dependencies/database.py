@@ -2,18 +2,28 @@ from collections.abc import Generator
 from typing import Annotated
 
 from fastapi import Depends
-from sqlmodel import Session, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+from app.adapters.database.adapter import DatastoreAdapter
+from app.core.config import settings
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+connect_args = {}
+engine = create_engine(
+    settings.database_url.unicode_string(), connect_args=connect_args
+)
 
 
-def get_session() -> Generator[Session]:
+def _get_session() -> Generator[Session]:
     with Session(engine) as session:
         yield session
 
 
-DatabaseSessionDepends = Annotated[Session, Depends(get_session)]
+DatabaseSessionDepends = Annotated[Session, Depends(_get_session)]
+
+
+def get_database_adapter(session: DatabaseSessionDepends) -> DatastoreAdapter:
+    return DatastoreAdapter(session=session)
+
+
+DatabaseAdapterDepends = Annotated[DatastoreAdapter, Depends(get_database_adapter)]
