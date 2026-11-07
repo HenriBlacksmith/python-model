@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
+from app.api import API_VERSION
 from app.api.models.health import HealthCheckResponse, HealthStatus
+from app.core.constants import constants
 
 router = APIRouter()
 
@@ -10,4 +12,8 @@ async def health_check():
     """
     Health check endpoint to verify that the API is running.
     """
-    return HealthCheckResponse(status=HealthStatus.PASS)
+    return HealthCheckResponse(
+        status=HealthStatus.PASS,
+        version=API_VERSION,
+        release_id=constants.version,
+    )

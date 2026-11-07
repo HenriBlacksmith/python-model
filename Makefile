@@ -31,3 +31,7 @@ run: run-migrations run-dependencies
 
 run-monitoring:
 	@docker compose --file monitoring/compose.yml up --detach
+
+bump-version:
+	@uv version --bump=patch
+	@uv version --short > VERSION

@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel
+from app.api.models import APIModel
 
 
 class HealthStatus(StrEnum):
@@ -9,5 +9,7 @@ class HealthStatus(StrEnum):
     WARN = "warn"
 
 
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(APIModel):
     status: HealthStatus
+    version: str
+    release_id: str
