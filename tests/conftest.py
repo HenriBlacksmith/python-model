@@ -1,14 +1,14 @@
-from collections.abc import Generator
 from uuid import uuid4
+lazy from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, delete
 from sqlalchemy.orm import Session
 
-from app.adapters.database.models import User
 from app.core.config import settings
 from app.main import app
+lazy from app.adapters.database.models import User
 
 
 @pytest.fixture(scope="session")

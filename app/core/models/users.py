@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from uuid import UUID
+lazy from uuid import UUID
 
 
 @dataclass

@@ -25,6 +25,11 @@ dependencies = [
 # https://docs.astral.sh/ruff/linter/
 [tool.ruff.lint]
 
+# https://docs.astral.sh/ruff/settings/#lint_ignore
+ignore = [
+  "TC001", # https://docs.astral.sh/ruff/rules/typing-only-first-party-import/
+]
+
 # https://docs.astral.sh/ruff/settings/#lint_select
 select = [
   "I",       # isort: https://docs.astral.sh/ruff/rules/?linter=isort-i
@@ -44,6 +49,8 @@ select = [
   "RSE",     # flake8-raise: https://docs.astral.sh/ruff/rules/?linter=flake8-raise-rse
   "RET",     # flake8-return: https://docs.astral.sh/ruff/rules/?linter=flake8-return-ret
   "SLF",     # flake8-self: https://docs.astral.sh/ruff/rules/?linter=flake8-self-slf
+  "SIM",     # flake8-simplify: https://docs.astral.sh/ruff/rules/?linter=flake8-simplify-sim
+  "TC",      # flake8-type-checking: https://docs.astral.sh/ruff/rules/?linter=flake8-type-checking-tc
   "FLY",     # flynt: https://docs.astral.sh/ruff/rules/#flynt-fly
 ]
 

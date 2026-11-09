@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
+lazy from uuid import UUID
 
 from app.core.models.users import User, UserRequest
 

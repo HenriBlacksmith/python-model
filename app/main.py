@@ -1,6 +1,6 @@
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import TypedDict
+lazy from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.telemetry import TelemetryConfig

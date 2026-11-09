@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+lazy from fastapi.testclient import TestClient
 
 
 def test_health(test_client: TestClient, release_id: str):

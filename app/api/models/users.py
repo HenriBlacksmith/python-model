@@ -1,11 +1,11 @@
-from datetime import datetime
 from typing import Annotated
-from uuid import UUID
+lazy from datetime import datetime
+lazy from uuid import UUID
 
 from pydantic import Field
 
 from app.api.models import APIModel
-from app.core.models.users import User
+lazy from app.core.models.users import User
 
 
 class _UserBase(APIModel):

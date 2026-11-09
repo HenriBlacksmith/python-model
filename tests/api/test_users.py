@@ -1,8 +1,8 @@
 from unittest.mock import ANY
 
-from fastapi.testclient import TestClient
+lazy from fastapi.testclient import TestClient
 
-from app.adapters.database.models import User
+lazy from app.adapters.database.models import User
 
 
 def test_successful_user_creation(test_client: TestClient):

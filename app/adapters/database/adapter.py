@@ -1,11 +1,11 @@
-from uuid import UUID
+lazy from uuid import UUID
 
-from sqlalchemy.orm import Session
+lazy from sqlalchemy.orm import Session
 
 from app.adapters.database.models import User
-from app.core.models.users import User as CoreUser
-from app.core.models.users import UserRequest
 from app.core.ports.datastore import DatastorePort
+lazy from app.core.models.users import User as CoreUser
+lazy from app.core.models.users import UserRequest
 
 
 class DatastoreAdapter(DatastorePort):

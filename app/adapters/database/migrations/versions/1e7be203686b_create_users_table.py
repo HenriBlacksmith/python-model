@@ -6,8 +6,8 @@ Create Date: 2026-11-07 14:21:25.444598
 
 """
 
-from collections.abc import Sequence
 from pathlib import Path
+lazy from collections.abc import Sequence
 
 from alembic import op
 

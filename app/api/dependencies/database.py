@@ -1,5 +1,5 @@
-from collections.abc import Generator
 from typing import Annotated
+lazy from collections.abc import Generator
 
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session

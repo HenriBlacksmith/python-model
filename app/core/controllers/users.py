@@ -1,7 +1,7 @@
 from uuid import UUID, uuid4
 
 from app.core.models.users import User, UserRequest
-from app.core.ports.datastore import DatastorePort
+lazy from app.core.ports.datastore import DatastorePort
 
 
 class UsersController:

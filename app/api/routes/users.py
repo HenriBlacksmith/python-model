@@ -1,9 +1,9 @@
-from uuid import UUID
+lazy from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.api.dependencies.controllers import UsersControllerDepends
 from app.api.models.users import UserRequest, UserResponse
+lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter()
 
