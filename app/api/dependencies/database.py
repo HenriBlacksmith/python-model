@@ -1,21 +1,14 @@
 from collections.abc import Generator
 from typing import Annotated
 
-from fastapi import Depends
-from sqlalchemy import create_engine
+from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
 from app.adapters.database.adapter import DatastoreAdapter
-from app.core.config import settings
-
-connect_args = {}
-engine = create_engine(
-    settings.database_url.unicode_string(), connect_args=connect_args
-)
 
 
-def _get_session() -> Generator[Session]:
-    with Session(engine) as session:
+def _get_session(request: Request) -> Generator[Session]:
+    with Session(request.state.database_engine) as session:
         yield session
 
 

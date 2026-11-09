@@ -4,22 +4,31 @@ from typing import TypedDict
 
 from fastapi import FastAPI
 from fastapi.telemetry import TelemetryConfig
+from sqlalchemy import Engine, create_engine
 
 from app.api.routes.router import router
+from app.core.config import settings
 from app.core.constants import constants
 
 
 class State(TypedDict):
     """Application state"""
 
-    ...
+    database_engine: Engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[State]:
     """Application lifespan context manager"""
-    state: State = {}
-    yield state
+    connect_args = {}
+    engine = create_engine(
+        settings.database.url.unicode_string(),
+        connect_args=connect_args,
+        pool_pre_ping=True,
+        pool_recycle=settings.database.pool_recycle,
+        pool_size=settings.database.pool_size,
+    )
+    yield State(database_engine=engine)
 
 
 def _get_application() -> FastAPI:

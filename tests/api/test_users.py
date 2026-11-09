@@ -4,8 +4,13 @@ from fastapi.testclient import TestClient
 
 
 def test_successful_user_creation(test_client: TestClient):
-    request_data = {"username": "testuser"}
-    response = test_client.post("/api/v1/users", json=request_data)
+    with test_client as client:
+        response = client.post(
+            "/api/v1/users",
+            json={
+                "username": "testuser",
+            },
+        )
 
     assert response.status_code == 201
     assert response.json() == {

@@ -38,7 +38,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = settings.database_url.unicode_string()
+    url = settings.database.url.unicode_string()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -59,7 +59,7 @@ def run_migrations_online() -> None:
     """
     connect_args = {}
     connectable = create_engine(
-        settings.database_url.unicode_string(), connect_args=connect_args
+        settings.database.url.unicode_string(), connect_args=connect_args
     )
 
     with connectable.connect() as connection:
