@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -33,3 +34,13 @@ def cleanup_database_between_tests(database_engine: Engine):
     with Session(database_engine) as session:
         session.execute(delete(User))
         session.commit()
+
+
+@pytest.fixture
+def test_user(database_engine: Engine) -> User:
+    with Session(database_engine) as session:
+        user = User(id=uuid4(), name="testuser")
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+    return user

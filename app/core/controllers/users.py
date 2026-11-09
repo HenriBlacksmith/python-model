@@ -22,12 +22,12 @@ class UsersController:
         """
         return self._datastore.get_user(user_id)
 
-    def update_user(self, user_id: UUID, username: str) -> None:
+    def update_user(self, user_id: UUID, username: str) -> User:
         """
         Update a user's username by ID.
         """
         user_request = UserRequest(name=username)
-        self._datastore.update_user(user_id, user_request)
+        return self._datastore.update_user(user_id, user_request)
 
     def delete_user(self, user_id: UUID) -> None:
         """

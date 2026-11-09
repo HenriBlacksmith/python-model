@@ -32,15 +32,18 @@ async def get_user(
 
 @router.put("/users/{user_id}", tags=["Users"])
 async def update_user(
-    users_controller: UsersControllerDepends, user_id: UUID, user: UserRequest
-) -> None:
+    users_controller: UsersControllerDepends, user_id: UUID, user_request: UserRequest
+) -> UserResponse:
     """
     Update a user's username by ID.
     """
-    users_controller.update_user(user_id, user.username)
+    user = users_controller.update_user(user_id, user_request.username)
+    return UserResponse.from_core_model(user)
 
 
-@router.delete("/users/{user_id}", tags=["Users"])
+@router.delete(
+    "/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Users"]
+)
 async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:
     """
     Delete a user by ID.
