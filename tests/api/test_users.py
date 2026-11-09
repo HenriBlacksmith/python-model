@@ -5,7 +5,7 @@ lazy from fastapi.testclient import TestClient
 lazy from app.adapters.database.models import User
 
 
-def test_successful_user_creation(test_client: TestClient):
+def test_successful_user_creation(test_client: TestClient) -> None:
     with test_client as client:
         response = client.post(
             "/api/v1/users",
@@ -23,7 +23,7 @@ def test_successful_user_creation(test_client: TestClient):
     }
 
 
-def test_successful_user_retrieval(test_client: TestClient, test_user: User):
+def test_successful_user_retrieval(test_client: TestClient, test_user: User) -> None:
     with test_client as client:
         response = client.get(f"/api/v1/users/{test_user.id}")
 
@@ -36,7 +36,7 @@ def test_successful_user_retrieval(test_client: TestClient, test_user: User):
     }
 
 
-def test_successful_user_update(test_client: TestClient, test_user: User):
+def test_successful_user_update(test_client: TestClient, test_user: User) -> None:
     with test_client as client:
         response = client.put(
             f"/api/v1/users/{test_user.id}",
@@ -54,7 +54,7 @@ def test_successful_user_update(test_client: TestClient, test_user: User):
     }
 
 
-def test_successful_user_deletion(test_client: TestClient, test_user: User):
+def test_successful_user_deletion(test_client: TestClient, test_user: User) -> None:
     with test_client as client:
         response = client.delete(f"/api/v1/users/{test_user.id}")
 

@@ -5,7 +5,7 @@ lazy from app.core.ports.datastore import DatastorePort
 
 
 class UsersController:
-    def __init__(self, datastore: DatastorePort):
+    def __init__(self, datastore: DatastorePort) -> None:
         self._datastore = datastore
 
     def create_user(self, username: str) -> User:

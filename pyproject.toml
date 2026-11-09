@@ -37,6 +37,7 @@ select = [
   "E", "W",  # pycodestyle: https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
   "N",       # pep8-naming: https://docs.astral.sh/ruff/rules/#pep8-naming-n
   "UP",      # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
+  "ANN",     # flake8-annotations: https://docs.astral.sh/ruff/rules/?linter=flake8-annotations-ann
   "B",       # flake8-bugbear: https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
   "A",       # flake8-builtins: https://docs.astral.sh/ruff/rules/#flake8-builtins-a
   "DTZ",     # flake8-datetimez: https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz

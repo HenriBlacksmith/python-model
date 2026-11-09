@@ -30,7 +30,7 @@ def database_engine() -> Generator[Engine]:
 
 
 @pytest.fixture(autouse=True)
-def cleanup_database_between_tests(database_engine: Engine):
+def cleanup_database_between_tests(database_engine: Engine) -> None:
     with Session(database_engine) as session:
         session.execute(delete(User))
         session.commit()

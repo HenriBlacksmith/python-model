@@ -9,7 +9,7 @@ lazy from app.core.models.users import UserRequest
 
 
 class DatastoreAdapter(DatastorePort):
-    def __init__(self, session: Session):
+    def __init__(self, session: Session) -> None:
         self._session = session
 
     def create_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
