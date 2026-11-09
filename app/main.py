@@ -29,6 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[State]:
         pool_size=settings.database.pool_size,
     )
     yield State(database_engine=engine)
+    engine.dispose()
 
 
 def _get_application() -> FastAPI:
