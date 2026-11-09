@@ -10,7 +10,7 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked
 
-FROM python:3.15.0-slim
+FROM python:3.15.2-slim
 # It is important to use the image that matches the builder, as the path to the
 # Python executable must be the same, e.g., using `python:3.11-slim-trixie`
 # will fail.

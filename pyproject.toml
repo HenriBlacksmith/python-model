@@ -7,7 +7,7 @@ maintainers = [
 keywords = ["sample"]
 description = "Sample project for Python"
 readme = "README.md"
-requires-python = ">=3.15.0"
+requires-python = ">=3.15.2"
 classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.15",
