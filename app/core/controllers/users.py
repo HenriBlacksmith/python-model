@@ -1,5 +1,6 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from app.core.models.users import User, UserRequest
 from app.core.ports.datastore import DatastorePort
 
 
@@ -7,13 +8,15 @@ class UsersController:
     def __init__(self, datastore: DatastorePort):
         self._datastore = datastore
 
-    def create_user(self, username: str) -> UUID:
+    def create_user(self, username: str) -> User:
         """
         Create a new user in the system.
         """
-        return self._datastore.create_user(username)
+        user_request = UserRequest(name=username)
+        user_id = uuid4()
+        return self._datastore.create_user(user_id, user_request)
 
-    def get_user(self, user_id: UUID) -> str:
+    def get_user(self, user_id: UUID) -> User:
         """
         Get a user by ID.
         """
@@ -23,7 +26,8 @@ class UsersController:
         """
         Update a user's username by ID.
         """
-        self._datastore.update_user(user_id, username)
+        user_request = UserRequest(name=username)
+        self._datastore.update_user(user_id, user_request)
 
     def delete_user(self, user_id: UUID) -> None:
         """

@@ -10,13 +10,13 @@ router = APIRouter()
 
 @router.post("/users", tags=["Users"], status_code=status.HTTP_201_CREATED)
 async def create_user(
-    users_controller: UsersControllerDepends, user: UserRequest
+    users_controller: UsersControllerDepends, user_request: UserRequest
 ) -> UserResponse:
     """
     Create a new user in the system.
     """
-    user_id = users_controller.create_user(user.username)
-    return UserResponse(user_id=user_id, username=user.username)
+    user = users_controller.create_user(user_request.username)
+    return UserResponse.from_core_model(user)
 
 
 @router.get("/users/{user_id}", tags=["Users"])
@@ -27,7 +27,7 @@ async def get_user(
     Get a user by ID.
     """
     user = users_controller.get_user(user_id)
-    return UserResponse(user_id=user_id, username=user)
+    return UserResponse.from_core_model(user)
 
 
 @router.put("/users/{user_id}", tags=["Users"])

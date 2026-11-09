@@ -17,6 +17,10 @@ test: run-migrations run-dependencies
 build:
 	@docker build .
 
+reset-migrations:
+	@$(UV) alembic downgrade base
+	@$(UV) alembic upgrade head
+
 run-migrations:
 	@$(UV) alembic upgrade head
 

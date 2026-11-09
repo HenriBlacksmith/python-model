@@ -7,8 +7,8 @@ Create Date: 2026-11-07 14:21:25.444598
 """
 
 from collections.abc import Sequence
+from pathlib import Path
 
-import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -20,13 +20,11 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.create_table(
-        "users",
-        sa.Column("id", sa.UUID(as_uuid=True), primary_key=True),
-        sa.Column("name", sa.String, nullable=False),
-    )
+    with open(f"{Path(__file__).resolve().parent}/upgrades/{revision}.sql") as f:
+        op.execute(f.read())
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    pass
+    with open(f"{Path(__file__).resolve().parent}/downgrades/{revision}.sql") as f:
+        op.execute(f.read())

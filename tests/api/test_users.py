@@ -11,4 +11,6 @@ def test_successful_user_creation(test_client: TestClient):
     assert response.json() == {
         "username": "testuser",
         "userId": ANY,
+        "createdAt": ANY,
+        "updatedAt": ANY,
     }

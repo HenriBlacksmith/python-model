@@ -1,9 +1,11 @@
+from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
 from pydantic import Field
 
 from app.api.models import APIModel
+from app.core.models.users import User
 
 
 class _UserBase(APIModel):
@@ -15,3 +17,14 @@ class UserRequest(_UserBase): ...
 
 class UserResponse(_UserBase):
     user_id: UUID
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_core_model(cls, user: User) -> UserResponse:
+        return cls(
+            user_id=user.id,
+            username=user.name,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+        )
