@@ -65,6 +65,7 @@ dev = [
     "httpx2>=2.16.0",
     "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
+    "pytest-env>=1.8.5",
     "ruff==0.17.4",
     "ty>=0.0.96",
 ]
@@ -77,6 +78,8 @@ addopts = [
   "--cov=app",
 ]
 
+[tool.pytest_env]
+CONFIG_FILE_PATH="tests/config.yaml"
 
 [tool.alembic]
 

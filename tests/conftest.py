@@ -2,6 +2,8 @@ from uuid import uuid4
 lazy from collections.abc import Generator
 
 import pytest
+from alembic import command
+from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, delete
 from sqlalchemy.orm import Session
@@ -27,6 +29,13 @@ def database_engine() -> Generator[Engine]:
     engine = create_engine(settings.database.url.unicode_string())
     yield engine
     engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def run_migrations() -> None:
+    alembic_cfg = Config("alembic.ini")
+    command.downgrade(alembic_cfg, "base")
+    command.upgrade(alembic_cfg, "head")
 
 
 @pytest.fixture(autouse=True)

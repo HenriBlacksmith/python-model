@@ -11,7 +11,7 @@ lint:
 	@$(UV) ruff check .
 	@$(UV) ty check .
 
-test: run-migrations run-dependencies
+test: run-dependencies
 	@$(UV) pytest .
 
 build:
