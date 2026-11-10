@@ -22,6 +22,30 @@ async def test_successful_user_creation(test_client: AsyncClient) -> None:
     }
 
 
+async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> None:
+    response = await test_client.post(
+        "/api/v1/users",
+        json={
+            "username": "",
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "loc": ["body", "username"],
+                "msg": "String should have at least 2 characters",
+                "type": "string_too_short",
+                "input": "",
+                "ctx": {
+                    "min_length": 2,
+                },
+            }
+        ]
+    }
+
+
 async def test_successful_user_retrieval(
     test_client: AsyncClient, test_user: User
 ) -> None:
