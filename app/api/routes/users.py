@@ -15,7 +15,7 @@ async def create_user(
     """
     Create a new user in the system.
     """
-    user = users_controller.create_user(user_request.username)
+    user = await users_controller.create_user(user_request.username)
     return UserResponse.from_core_model(user)
 
 
@@ -26,7 +26,7 @@ async def get_user(
     """
     Get a user by ID.
     """
-    user = users_controller.get_user(user_id)
+    user = await users_controller.get_user(user_id)
     return UserResponse.from_core_model(user)
 
 
@@ -37,7 +37,7 @@ async def update_user(
     """
     Update a user's username by ID.
     """
-    user = users_controller.update_user(user_id, user_request.username)
+    user = await users_controller.update_user(user_id, user_request.username)
     return UserResponse.from_core_model(user)
 
 
@@ -48,4 +48,4 @@ async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -
     """
     Delete a user by ID.
     """
-    users_controller.delete_user(user_id)
+    await users_controller.delete_user(user_id)

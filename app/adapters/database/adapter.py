@@ -12,19 +12,19 @@ class DatastoreAdapter(DatastorePort):
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def create_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
+    async def create_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = User(id=user_id, name=user_request.name)
         self._session.add(user)
         self._session.commit()
         return user.to_core_model()
 
-    def get_user(self, user_id: UUID) -> CoreUser:
+    async def get_user(self, user_id: UUID) -> CoreUser:
         user = self._session.get(User, user_id)
         if user is None:
             raise ValueError(f"User with ID {user_id} not found.")
         return user.to_core_model()
 
-    def update_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
+    async def update_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = self._session.get(User, user_id)
         if user is None:
             raise ValueError(f"User with ID {user_id} not found.")
@@ -33,7 +33,7 @@ class DatastoreAdapter(DatastorePort):
         self._session.refresh(user)
         return user.to_core_model()
 
-    def delete_user(self, user_id: UUID) -> None:
+    async def delete_user(self, user_id: UUID) -> None:
         user = self._session.get(User, user_id)
         if user is None:
             raise ValueError(f"User with ID {user_id} not found.")
