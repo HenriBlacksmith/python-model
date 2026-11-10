@@ -32,12 +32,14 @@ ignore = [
 
 # https://docs.astral.sh/ruff/settings/#lint_select
 select = [
+  "FAST",    # FastAPI: https://docs.astral.sh/ruff/rules/?linter=fastapi-fast
   "I",       # isort: https://docs.astral.sh/ruff/rules/?linter=isort-i
   "F",       # pyflakes: https://docs.astral.sh/ruff/rules/#pyflakes-f
   "E", "W",  # pycodestyle: https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
   "N",       # pep8-naming: https://docs.astral.sh/ruff/rules/#pep8-naming-n
   "UP",      # pyupgrade: https://docs.astral.sh/ruff/rules/#pyupgrade-up
   "ANN",     # flake8-annotations: https://docs.astral.sh/ruff/rules/?linter=flake8-annotations-ann
+  "ASYNC",   # flake8-async: https://docs.astral.sh/ruff/rules/?linter=flake8-async-async
   "B",       # flake8-bugbear: https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
   "A",       # flake8-builtins: https://docs.astral.sh/ruff/rules/#flake8-builtins-a
   "DTZ",     # flake8-datetimez: https://docs.astral.sh/ruff/rules/#flake8-datetimez-dtz
@@ -52,7 +54,10 @@ select = [
   "SLF",     # flake8-self: https://docs.astral.sh/ruff/rules/?linter=flake8-self-slf
   "SIM",     # flake8-simplify: https://docs.astral.sh/ruff/rules/?linter=flake8-simplify-sim
   "TC",      # flake8-type-checking: https://docs.astral.sh/ruff/rules/?linter=flake8-type-checking-tc
+  "ARG",     # flake8-unused-arguments: https://docs.astral.sh/ruff/rules/?linter=flake8-unused-arguments-arg
   "FLY",     # flynt: https://docs.astral.sh/ruff/rules/#flynt-fly
+  "FURB",    # refurb: https://docs.astral.sh/ruff/rules/?linter=refurb-furb
+  "RUF",     # Ruff: https://docs.astral.sh/ruff/rules/?linter=ruff-specific-rules-ruf
 ]
 
 [dependency-groups]

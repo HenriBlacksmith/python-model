@@ -18,7 +18,7 @@ class State(TypedDict):
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[State]:
+async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
     """Application lifespan context manager"""
     connect_args = {}
     engine = create_engine(
