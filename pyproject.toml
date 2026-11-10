@@ -14,10 +14,10 @@ classifiers = [
 ]
 dependencies = [
     "alembic>=1.20.1",
+    "asyncpg>=0.32.0",
     "fastapi[standard]>=0.115.2",
-    "psycopg2-binary>=2.9.13",
     "pydantic-settings>=2.16.2",
-    "sqlalchemy>=2.1.6",
+    "sqlalchemy[asyncio]>=2.1.6",
     "uvicorn>=0.32.0",
 ]
 
@@ -62,8 +62,10 @@ select = [
 
 [dependency-groups]
 dev = [
+    "asgi-lifespan>=2.1.0",
     "httpx2>=2.16.0",
     "pytest>=9.2.0",
+    "pytest-asyncio>=1.4.1.post1",
     "pytest-cov>=7.1.0",
     "pytest-env>=1.8.5",
     "ruff==0.17.4",
@@ -77,6 +79,8 @@ entrypoint = "app.main:app"
 addopts = [
   "--cov=app",
 ]
+asyncio_default_fixture_loop_scope = "session"
+asyncio_mode = "auto"
 
 [tool.pytest_env]
 CONFIG_FILE_PATH="tests/config.yaml"

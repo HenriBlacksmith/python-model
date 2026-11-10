@@ -4,7 +4,7 @@ lazy from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.telemetry import TelemetryConfig
-from sqlalchemy import Engine, create_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.api.routes.router import router
 from app.core.config import settings
@@ -14,14 +14,14 @@ from app.core.constants import constants
 class State(TypedDict):
     """Application state"""
 
-    database_engine: Engine
+    database_engine: AsyncEngine
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
     """Application lifespan context manager"""
     connect_args = {}
-    engine = create_engine(
+    engine = create_async_engine(
         settings.database.url.unicode_string(),
         connect_args=connect_args,
         pool_pre_ping=True,
@@ -29,7 +29,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
         pool_size=settings.database.pool_size,
     )
     yield State(database_engine=engine)
-    engine.dispose()
+    await engine.dispose()
 
 
 def _get_application() -> FastAPI:

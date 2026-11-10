@@ -1,18 +1,18 @@
 from typing import Annotated
-lazy from collections.abc import Generator
+lazy from collections.abc import AsyncGenerator
 
 from fastapi import Depends, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.adapter import DatastoreAdapter
 
 
-def _get_session(request: Request) -> Generator[Session]:
-    with Session(request.state.database_engine) as session:
+async def _get_session(request: Request) -> AsyncGenerator[AsyncSession]:
+    async with AsyncSession(request.state.database_engine) as session:
         yield session
 
 
-DatabaseSessionDepends = Annotated[Session, Depends(_get_session)]
+DatabaseSessionDepends = Annotated[AsyncSession, Depends(_get_session)]
 
 
 def get_database_adapter(session: DatabaseSessionDepends) -> DatastoreAdapter:

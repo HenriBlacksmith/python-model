@@ -1,18 +1,17 @@
 from unittest.mock import ANY
 
-lazy from fastapi.testclient import TestClient
+lazy from httpx2 import AsyncClient
 
 lazy from app.adapters.database.models import User
 
 
-def test_successful_user_creation(test_client: TestClient) -> None:
-    with test_client as client:
-        response = client.post(
-            "/api/v1/users",
-            json={
-                "username": "testuser",
-            },
-        )
+async def test_successful_user_creation(test_client: AsyncClient) -> None:
+    response = await test_client.post(
+        "/api/v1/users",
+        json={
+            "username": "testuser",
+        },
+    )
 
     assert response.status_code == 201
     assert response.json() == {
@@ -23,9 +22,10 @@ def test_successful_user_creation(test_client: TestClient) -> None:
     }
 
 
-def test_successful_user_retrieval(test_client: TestClient, test_user: User) -> None:
-    with test_client as client:
-        response = client.get(f"/api/v1/users/{test_user.id}")
+async def test_successful_user_retrieval(
+    test_client: AsyncClient, test_user: User
+) -> None:
+    response = await test_client.get(f"/api/v1/users/{test_user.id}")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -36,14 +36,15 @@ def test_successful_user_retrieval(test_client: TestClient, test_user: User) -> 
     }
 
 
-def test_successful_user_update(test_client: TestClient, test_user: User) -> None:
-    with test_client as client:
-        response = client.put(
-            f"/api/v1/users/{test_user.id}",
-            json={
-                "username": "updateduser",
-            },
-        )
+async def test_successful_user_update(
+    test_client: AsyncClient, test_user: User
+) -> None:
+    response = await test_client.put(
+        f"/api/v1/users/{test_user.id}",
+        json={
+            "username": "updateduser",
+        },
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -54,9 +55,10 @@ def test_successful_user_update(test_client: TestClient, test_user: User) -> Non
     }
 
 
-def test_successful_user_deletion(test_client: TestClient, test_user: User) -> None:
-    with test_client as client:
-        response = client.delete(f"/api/v1/users/{test_user.id}")
+async def test_successful_user_deletion(
+    test_client: AsyncClient, test_user: User
+) -> None:
+    response = await test_client.delete(f"/api/v1/users/{test_user.id}")
 
     assert response.status_code == 204
     assert response.content == b""

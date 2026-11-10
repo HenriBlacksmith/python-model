@@ -1,12 +1,13 @@
 from uuid import uuid4
-lazy from collections.abc import Generator
+lazy from collections.abc import AsyncGenerator
 
 import pytest
 from alembic import command
 from alembic.config import Config
-from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine, delete
-from sqlalchemy.orm import Session
+from asgi_lifespan import LifespanManager
+from httpx2 import ASGITransport, AsyncClient
+from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
 from app.core.config import settings
 from app.main import app
@@ -19,16 +20,22 @@ def release_id() -> str:
         return f.read().strip()
 
 
-@pytest.fixture(scope="session")
-def test_client() -> TestClient:
-    return TestClient(app)
+@pytest.fixture
+async def test_client() -> AsyncGenerator[AsyncClient]:
+    async with (
+        LifespanManager(app) as manager,
+        AsyncClient(
+            transport=ASGITransport(app=manager.app), base_url="http://127.0.0.1:8000"
+        ) as client,
+    ):
+        yield client
 
 
 @pytest.fixture(scope="session")
-def database_engine() -> Generator[Engine]:
-    engine = create_engine(settings.database.url.unicode_string())
+async def database_engine() -> AsyncGenerator[AsyncEngine]:
+    engine = create_async_engine(settings.database.url.unicode_string())
     yield engine
-    engine.dispose()
+    await engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -39,17 +46,17 @@ def run_migrations() -> None:
 
 
 @pytest.fixture(autouse=True)
-def cleanup_database_between_tests(database_engine: Engine) -> None:
-    with Session(database_engine) as session:
-        session.execute(delete(User))
-        session.commit()
+async def cleanup_database_between_tests(database_engine: AsyncEngine) -> None:
+    async with AsyncSession(database_engine) as session:
+        await session.execute(delete(User))
+        await session.commit()
 
 
 @pytest.fixture
-def test_user(database_engine: Engine) -> User:
-    with Session(database_engine) as session:
+async def test_user(database_engine: AsyncEngine) -> User:
+    async with AsyncSession(database_engine) as session:
         user = User(id=uuid4(), name="testuser")
         session.add(user)
-        session.commit()
-        session.refresh(user)
+        await session.commit()
+        await session.refresh(user)
     return user

@@ -1,8 +1,8 @@
-lazy from fastapi.testclient import TestClient
+lazy from httpx2 import AsyncClient
 
 
-def test_health(test_client: TestClient, release_id: str) -> None:
-    response = test_client.get("/api/v1/health")
+async def test_health(test_client: AsyncClient, release_id: str) -> None:
+    response = await test_client.get("/api/v1/health")
 
     assert response.status_code == 200
     assert response.json() == {
