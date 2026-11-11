@@ -1,4 +1,5 @@
 from unittest.mock import ANY
+from uuid import uuid4
 
 lazy from httpx2 import AsyncClient
 
@@ -58,6 +59,19 @@ async def test_successful_user_retrieval(
         "createdAt": ANY,
         "updatedAt": ANY,
     }
+
+
+async def test_retrieval_of_non_existent_user(test_client: AsyncClient) -> None:
+    random_id = uuid4()
+    response = await test_client.get(f"/api/v1/users/{random_id}")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "status": 404,
+        "title": "User not found.",
+        "type": "about:blank",
+    }
+    assert response.headers["content-type"] == "application/problem+json"
 
 
 async def test_successful_user_update(

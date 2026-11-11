@@ -19,10 +19,10 @@ class DatastoreAdapter(DatastorePort):
         await self._session.refresh(user)
         return user.to_core_model()
 
-    async def get_user(self, user_id: UUID) -> CoreUser:
+    async def get_user(self, user_id: UUID) -> CoreUser | None:
         user = await self._session.get(User, user_id)
         if user is None:
-            raise ValueError(f"User with ID {user_id} not found.")
+            return None
         return user.to_core_model()
 
     async def update_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:

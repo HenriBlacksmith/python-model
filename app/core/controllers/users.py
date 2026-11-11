@@ -4,6 +4,9 @@ from app.core.models.users import User, UserRequest
 lazy from app.core.ports.datastore import DatastorePort
 
 
+class UserNotFoundError(Exception): ...
+
+
 class UsersController:
     def __init__(self, datastore: DatastorePort) -> None:
         self._datastore = datastore
@@ -20,7 +23,10 @@ class UsersController:
         """
         Get a user by ID.
         """
-        return await self._datastore.get_user(user_id)
+        user = await self._datastore.get_user(user_id)
+        if user is None:
+            raise UserNotFoundError
+        return user
 
     async def update_user(self, user_id: UUID, username: str) -> User:
         """
