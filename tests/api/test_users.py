@@ -39,6 +39,7 @@ async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> 
         "detail": "",
         "instance": "/api/v1/users",
     }
+    assert response.headers["content-type"] == "application/problem+json"
 
 
 async def test_successful_user_retrieval(

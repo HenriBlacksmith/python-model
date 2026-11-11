@@ -11,6 +11,7 @@ async def validation_exception_handler(
 ) -> Response:
     return JSONResponse(
         status_code=400,
+        media_type="application/problem+json",
         content=jsonable_encoder(
             APIErrorResponse(
                 title="The request was invalid.",
