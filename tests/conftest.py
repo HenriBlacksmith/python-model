@@ -1,3 +1,4 @@
+from pathlib import Path
 from uuid import uuid4
 lazy from collections.abc import AsyncGenerator
 
@@ -38,9 +39,12 @@ async def database_engine() -> AsyncGenerator[AsyncEngine]:
     await engine.dispose()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def run_migrations() -> None:
-    alembic_cfg = Config("alembic.ini")
+    alembic_cfg = Config(
+        f"{Path(__file__).resolve().parent.parent}/alembic.ini",
+        toml_file=f"{Path(__file__).resolve().parent.parent}/pyproject.toml",
+    )
     command.downgrade(alembic_cfg, "base")
     command.upgrade(alembic_cfg, "head")
 
