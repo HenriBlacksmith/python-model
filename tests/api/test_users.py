@@ -31,19 +31,13 @@ async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> 
         },
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert response.json() == {
-        "detail": [
-            {
-                "loc": ["body", "username"],
-                "msg": "String should have at least 2 characters",
-                "type": "string_too_short",
-                "input": "",
-                "ctx": {
-                    "min_length": 2,
-                },
-            }
-        ]
+        "status": 400,
+        "title": "The request was invalid.",
+        "type": "about:blank",
+        "detail": "",
+        "instance": "/api/v1/users",
     }
 
 

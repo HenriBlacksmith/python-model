@@ -3,9 +3,11 @@ from typing import TypedDict
 lazy from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.telemetry import TelemetryConfig
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
+from app.api.handlers import validation_exception_handler
 from app.api.routes.router import router
 from app.core.config import settings
 from app.core.constants import constants
@@ -45,6 +47,7 @@ def _get_application() -> FastAPI:
         ),
     )
     app.include_router(router=router)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     return app
 
 
