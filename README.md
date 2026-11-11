@@ -18,4 +18,8 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Study logging patterns
 - Investigate correlation id patterns
 - Add an asynchronous database health check
+- Add documentation for the code with mkdocstrings
+- Study performance benchmark patterns
+- Study adding an adapter for an HTTP API
+- Add user events using PostgreSQL LISTEN/NOTIFY and JSONL Streaming
 
