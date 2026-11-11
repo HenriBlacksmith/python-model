@@ -17,4 +17,5 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Run the test database as a pytest fixture in docker
 - Study logging patterns
 - Investigate correlation id patterns
+- Add an asynchronous database health check
 
