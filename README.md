@@ -24,4 +24,5 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Study performance benchmark patterns
 - Study adding an adapter for an HTTP API
 - Add user events using PostgreSQL LISTEN/NOTIFY and JSONL Streaming
-- Add request validation tests with hypopthesis
+- Add request validation tests with hypothesis
+- Enforce hexagonal architecture with strict import patterns using Ruff ICN rules
