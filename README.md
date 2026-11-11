@@ -16,6 +16,8 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Add Ory OAuth authorization server to the compose setup
 - Run the test database as a pytest fixture in docker
 - Study logging patterns
+- Add a paginated GET /users endpoint
+- Add sorting and filtering to GET /users endpoint
 - Investigate correlation id patterns
 - Add an asynchronous database health check
 - Add documentation for the code with mkdocstrings
