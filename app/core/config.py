@@ -1,6 +1,8 @@
 import os
 from typing import Annotated
 
+from annotated_types import Gt
+from pydantic import HttpUrl
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -11,6 +13,11 @@ lazy from pydantic import Field, PostgresDsn
 config_file_path = os.getenv("CONFIG_FILE_PATH", "config.yaml")
 
 
+class APISettings(BaseSettings):
+    base_url: HttpUrl
+    default_page_size: Annotated[int, Gt(gt=0)]
+
+
 class DatabaseSettings(BaseSettings):
     url: PostgresDsn
     pool_size: int = 10
@@ -18,6 +25,7 @@ class DatabaseSettings(BaseSettings):
 
 
 class AppSettings(BaseSettings):
+    api: Annotated[APISettings, Field(alias="api")]
     database: Annotated[DatabaseSettings, Field(alias="database")]
 
     @classmethod

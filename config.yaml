@@ -1,3 +1,6 @@
+api:
+  base_url: http://blacksmith.local
+  default_page_size: 10
 database:
   url: postgresql+asyncpg://postgres:postgres@0.0.0.0:5432/postgres
   pool_size: 10

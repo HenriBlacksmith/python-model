@@ -1,6 +1,7 @@
 from unittest.mock import ANY
 from uuid import uuid4
 
+import pytest
 lazy from httpx2 import AsyncClient
 
 lazy from app.adapters.database.models import User
@@ -53,6 +54,34 @@ async def test_successful_user_retrieval(
         "userId": str(test_user.id),
         "createdAt": ANY,
         "updatedAt": ANY,
+    }
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "page=1&page_size=10",
+        "page=1",
+    ],
+)
+async def test_successful_user_list_no_user(
+    test_client: AsyncClient, query: str
+) -> None:
+    response = await test_client.get(f"/api/v1/users?{query}")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "pageSize": 10,
+        "page": 1,
+        "total": 0,
+        "data": [],
+        "links": {
+            "self": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+            "first": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+            "last": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+            "prev": None,
+            "next": None,
+        },
     }
 
 
