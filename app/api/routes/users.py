@@ -1,10 +1,7 @@
 lazy from uuid import UUID
 
-from fastapi import APIRouter, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, status
 
-from app.api.models.errors import APIErrorResponse
 from app.api.models.users import UserRequest, UserResponse
 from app.core.controllers.users import UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
@@ -23,23 +20,19 @@ async def create_user(
     return UserResponse.from_core_model(user)
 
 
-@router.get("/users/{user_id}", tags=["Users"], response_model=None)
+@router.get("/users/{user_id}", tags=["Users"], responses={
+    404: {"": ""}
+})
 async def get_user(
     users_controller: UsersControllerDepends, user_id: UUID
-) -> UserResponse | JSONResponse:
+) -> UserResponse:
     """
     Get a user by ID.
     """
     try:
         user = await users_controller.get_user(user_id)
-    except UserNotFoundError:
-        return JSONResponse(
-            status_code=404,
-            media_type="application/problem+json",
-            content=jsonable_encoder(
-                APIErrorResponse(title="User not found.", status=404), exclude_none=True
-            ),
-        )
+    except UserNotFoundError as err:
+        raise HTTPException(status_code=404, detail="User not found.") from err
     return UserResponse.from_core_model(user)
 
 
