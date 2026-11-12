@@ -2,6 +2,7 @@ lazy from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.api.models.errors import APIErrorResponse
 from app.api.models.users import UserRequest, UserResponse
 from app.core.controllers.users import UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
@@ -20,9 +21,16 @@ async def create_user(
     return UserResponse.from_core_model(user)
 
 
-@router.get("/users/{user_id}", tags=["Users"], responses={
-    404: {"": ""}
-})
+@router.get(
+    "/users/{user_id}",
+    tags=["Users"],
+    responses={
+        404: {
+            "model": APIErrorResponse,
+            "description": "User not found.",
+        },
+    },
+)
 async def get_user(
     users_controller: UsersControllerDepends, user_id: UUID
 ) -> UserResponse:

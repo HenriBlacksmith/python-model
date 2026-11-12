@@ -65,7 +65,7 @@ async def test_retrieval_of_non_existent_user(test_client: AsyncClient) -> None:
         "type": "about:blank",
         "status": 404,
         "title": "User not found.",
-        "instance": f"/api/v1/users/{random_id}"
+        "instance": f"/api/v1/users/{random_id}",
     }
     assert response.headers["content-type"] == "application/problem+json"
 
