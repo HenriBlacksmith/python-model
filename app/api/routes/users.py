@@ -2,15 +2,16 @@ lazy from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.api import Tags
 from app.api.models.errors import APIErrorResponse
 from app.api.models.users import UserRequest, UserResponse
 from app.core.controllers.users import UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
 
-router = APIRouter()
+router = APIRouter(tags=[Tags.Users])
 
 
-@router.post("/users", tags=["Users"], status_code=status.HTTP_201_CREATED)
+@router.post("/users", status_code=status.HTTP_201_CREATED)
 async def create_user(
     users_controller: UsersControllerDepends, user_request: UserRequest
 ) -> UserResponse:
@@ -23,7 +24,6 @@ async def create_user(
 
 @router.get(
     "/users/{user_id}",
-    tags=["Users"],
     responses={
         404: {
             "model": APIErrorResponse,
@@ -44,7 +44,7 @@ async def get_user(
     return UserResponse.from_core_model(user)
 
 
-@router.put("/users/{user_id}", tags=["Users"])
+@router.put("/users/{user_id}")
 async def update_user(
     users_controller: UsersControllerDepends, user_id: UUID, user_request: UserRequest
 ) -> UserResponse:
@@ -55,9 +55,7 @@ async def update_user(
     return UserResponse.from_core_model(user)
 
 
-@router.delete(
-    "/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Users"]
-)
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:
     """
     Delete a user by ID.
