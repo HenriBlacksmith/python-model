@@ -1,5 +1,6 @@
 lazy from uuid import UUID
 
+from sqlalchemy import func, select
 lazy from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.models import User
@@ -24,6 +25,20 @@ class DatastoreAdapter(DatastorePort):
         if user is None:
             return None
         return user.to_core_model()
+
+    async def list_users(
+        self, page_number: int, page_size: int
+    ) -> tuple[list[CoreUser], int]:
+        _limit = page_size
+        _offset = (page_number - 1) * page_size
+        _query = select(User)
+        _count_query = select(func.count()).select_from(_query.subquery())
+        _total = await self._session.scalar(_count_query) or 0
+        _results = await self._session.scalars(
+            _query.order_by(User.id).limit(_limit).offset(offset=_offset),
+        )
+
+        return [r.to_core_model() for r in _results.all()], _total
 
     async def update_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = await self._session.get(User, user_id)

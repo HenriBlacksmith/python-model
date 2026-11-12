@@ -12,6 +12,11 @@ class DatastorePort(ABC):
     async def get_user(self, user_id: UUID) -> User | None: ...
 
     @abstractmethod
+    async def list_users(
+        self, page_number: int, page_size: int
+    ) -> tuple[list[User], int]: ...
+
+    @abstractmethod
     async def update_user(self, user_id: UUID, user_request: UserRequest) -> User: ...
 
     @abstractmethod

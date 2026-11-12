@@ -1,9 +1,16 @@
+from typing import Annotated
 lazy from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import HttpUrl
 
 from app.api import Tags
 from app.api.models.errors import APIErrorResponse
+from app.api.models.pagination import (
+    PaginatedResponse,
+    PaginationLinks,
+    PaginationQueryParameters,
+)
 from app.api.models.users import UserRequest, UserResponse
 from app.core.controllers.users import UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
@@ -42,6 +49,29 @@ async def get_user(
     except UserNotFoundError as err:
         raise HTTPException(status_code=404, detail="User not found.") from err
     return UserResponse.from_core_model(user)
+
+
+@router.get("/users")
+async def list_users(
+    users_controller: UsersControllerDepends,
+    pagination_query: Annotated[PaginationQueryParameters, Query()],
+) -> PaginatedResponse[UserResponse]:
+    users, total = await users_controller.list_users(
+        pagination_query.page_size, pagination_query.page
+    )
+    return PaginatedResponse(
+        page_size=pagination_query.page_size,
+        page=pagination_query.page,
+        total=total,
+        data=[UserResponse.from_core_model(user) for user in users],
+        links=PaginationLinks(
+            first=HttpUrl("http://127.0.0.1/"),
+            self=HttpUrl("http://127.0.0.1/"),
+            prev=HttpUrl("http://127.0.0.1/"),
+            last=HttpUrl("http://127.0.0.1/"),
+            next=HttpUrl("http://127.0.0.1/"),
+        ),
+    )
 
 
 @router.put("/users/{user_id}")

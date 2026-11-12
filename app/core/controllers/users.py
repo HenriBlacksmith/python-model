@@ -28,6 +28,14 @@ class UsersController:
             raise UserNotFoundError
         return user
 
+    async def list_users(
+        self, page_number: int, page_size: int
+    ) -> tuple[list[User], int]:
+        """
+        Get a page of users.
+        """
+        return await self._datastore.list_users(page_number, page_size)
+
     async def update_user(self, user_id: UUID, username: str) -> User:
         """
         Update a user's username by ID.
