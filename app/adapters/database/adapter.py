@@ -35,7 +35,7 @@ class DatastoreAdapter(DatastorePort):
         _count_query = select(func.count()).select_from(_query.subquery())
         _total = await self._session.scalar(_count_query) or 0
         _results = await self._session.scalars(
-            _query.order_by(User.id).limit(_limit).offset(offset=_offset),
+            _query.order_by(User.name).limit(_limit).offset(offset=_offset),
         )
 
         return [r.to_core_model() for r in _results.all()], _total
