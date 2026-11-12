@@ -1,5 +1,6 @@
 from unittest.mock import ANY
 from uuid import uuid4
+lazy from collections.abc import Callable, Coroutine
 
 import pytest
 lazy from httpx2 import AsyncClient
@@ -82,6 +83,41 @@ async def test_successful_user_list_no_user(
             "prev": None,
             "next": None,
         },
+    }
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "page=1&page_size=10",
+        "page=1",
+    ],
+)
+async def test_successful_user_list_multiple_users(
+    test_client: AsyncClient,
+    query: str,
+    create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
+) -> None:
+    users = await create_test_users(
+        ["amy", "bob", "carl", "dave", "eddie", "fiona", "gayle"]
+    )
+
+    response = await test_client.get(f"/api/v1/users?{query}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["pageSize"] == 10
+    assert body["page"] == 1
+    assert body["total"] == len(users)
+    assert sorted(user["username"] for user in body["data"]) == sorted(
+        user.name for user in users
+    )
+    assert body["links"] == {
+        "self": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+        "first": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+        "last": "http://blacksmith.local/api/v1/users?page=1&page_size=10",
+        "prev": None,
+        "next": None,
     }
 
 

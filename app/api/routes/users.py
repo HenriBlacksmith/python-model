@@ -55,7 +55,7 @@ async def list_users(
     pagination_query: Annotated[PaginationQueryParameters, Query()],
 ) -> PaginatedResponse[UserResponse]:
     users, total = await users_controller.list_users(
-        pagination_query.page_size, pagination_query.page
+        pagination_query.page, pagination_query.page_size
     )
     return PaginatedResponse.build(
         path="api/v1/users",
