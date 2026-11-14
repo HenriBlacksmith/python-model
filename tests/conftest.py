@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from app.core.config import settings
+from app.adapters.configuration.settings import AppSettings
 from app.main import app
 lazy from app.adapters.database.models import User
 
@@ -39,8 +39,13 @@ async def test_client() -> AsyncGenerator[AsyncClient]:
 
 
 @pytest.fixture(scope="session")
-async def database_engine() -> AsyncGenerator[AsyncEngine]:
-    engine = create_async_engine(settings.database.url.unicode_string())
+async def app_settings() -> AppSettings:
+    return AppSettings()
+
+
+@pytest.fixture(scope="session")
+async def database_engine(app_settings: AppSettings) -> AsyncGenerator[AsyncEngine]:
+    engine = create_async_engine(app_settings.database.url.unicode_string())
     yield engine
     await engine.dispose()
 

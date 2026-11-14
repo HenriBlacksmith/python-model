@@ -15,9 +15,9 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from app.adapters.configuration.settings import settings
 from app.api.handlers import http_exception_handler, validation_exception_handler
 from app.api.routes.router import router
-from app.core.config import settings
 from app.core.constants import constants
 
 

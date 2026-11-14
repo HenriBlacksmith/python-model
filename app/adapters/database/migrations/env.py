@@ -5,7 +5,7 @@ from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 lazy from sqlalchemy import Connection
 
-from app.core.config import settings
+from app.adapters.configuration.settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

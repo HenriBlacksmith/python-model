@@ -4,8 +4,8 @@ from annotated_types import Ge, Gt
 from pydantic import BaseModel
 lazy from pydantic import HttpUrl
 
+from app.adapters.configuration.settings import settings
 from app.api.models import APIModel
-from app.core.config import settings
 
 
 class PaginationQueryParameters(BaseModel):
