@@ -10,7 +10,7 @@ from app.api.models.pagination import (
     PaginationQueryParameters,
 )
 from app.api.models.users import UserRequest, UserResponse
-from app.core.controllers.users import UserNotFoundError
+from app.core.errors import UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter(tags=[Tags.Users])
@@ -61,9 +61,9 @@ async def get_user(
     """
     try:
         user = await users_controller.get_user(user_id)
+        return UserResponse.from_core_model(user)
     except UserNotFoundError as err:
-        raise HTTPException(status_code=404, detail="User not found.") from err
-    return UserResponse.from_core_model(user)
+        raise HTTPException(status_code=404, detail=err.message) from err
 
 
 @router.get("/users")
@@ -102,17 +102,33 @@ async def update_user(
     """
     Update a user's username by ID.
     """
-    user = await users_controller.update_user(user_id, user_request.username)
-    return UserResponse.from_core_model(user)
+    try:
+        user = await users_controller.update_user(user_id, user_request.username)
+        return UserResponse.from_core_model(user)
+    except UserNotFoundError as err:
+        raise HTTPException(status_code=404, detail=err.message) from err
 
 
 @router.delete(
     "/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
+    responses={
+        404: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "User not found.",
+        },
+    },
 )
 async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:
     """
     Delete a user by ID.
     """
-    await users_controller.delete_user(user_id)
+    try:
+        await users_controller.delete_user(user_id)
+    except UserNotFoundError as err:
+        raise HTTPException(status_code=404, detail=err.message) from err

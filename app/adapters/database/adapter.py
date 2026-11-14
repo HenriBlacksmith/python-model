@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 lazy from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.models import User
+from app.core.errors import UserNotFoundError
 from app.core.ports.datastore import DatastorePort
 lazy from app.core.models.users import User as CoreUser
 lazy from app.core.models.users import UserRequest
@@ -20,10 +21,10 @@ class DatastoreAdapter(DatastorePort):
         await self._session.refresh(user)
         return user.to_core_model()
 
-    async def get_user(self, user_id: UUID) -> CoreUser | None:
+    async def get_user(self, user_id: UUID) -> CoreUser:
         user = await self._session.get(User, user_id)
         if user is None:
-            return None
+            raise UserNotFoundError
         return user.to_core_model()
 
     async def list_users(
@@ -43,7 +44,7 @@ class DatastoreAdapter(DatastorePort):
     async def update_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = await self._session.get(User, user_id)
         if user is None:
-            raise ValueError(f"User with ID {user_id} not found.")
+            raise UserNotFoundError
         user.name = user_request.name
         await self._session.commit()
         await self._session.refresh(user)
@@ -52,6 +53,6 @@ class DatastoreAdapter(DatastorePort):
     async def delete_user(self, user_id: UUID) -> None:
         user = await self._session.get(User, user_id)
         if user is None:
-            raise ValueError(f"User with ID {user_id} not found.")
+            raise UserNotFoundError
         await self._session.delete(user)
         await self._session.commit()
