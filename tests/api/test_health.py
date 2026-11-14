@@ -77,7 +77,10 @@ async def test_readiness_check_fails_when_db_fails(
         "version": "v1",
         "releaseId": release_id,
         "checks": {
-            "datastore:health": {"componentType": "datastore", "status": "fail"}
+            "datastore:health": {
+                "componentType": "datastore",
+                "status": "fail",
+            }
         },
     }
     assert response.headers["content-type"] == "application/health+json"
