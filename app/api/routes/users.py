@@ -16,7 +16,20 @@ lazy from app.api.dependencies.controllers import UsersControllerDepends
 router = APIRouter(tags=[Tags.Users])
 
 
-@router.post("/users", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/users",
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "The request was invalid.",
+        },
+    },
+)
 async def create_user(
     users_controller: UsersControllerDepends, user_request: UserRequest
 ) -> UserResponse:
