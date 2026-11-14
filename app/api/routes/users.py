@@ -1,7 +1,7 @@
 from typing import Annotated
 lazy from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api import Tags
 from app.api.models.errors import APIErrorResponse
@@ -106,7 +106,11 @@ async def update_user(
     return UserResponse.from_core_model(user)
 
 
-@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/users/{user_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:
     """
     Delete a user by ID.

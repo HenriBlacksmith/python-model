@@ -22,3 +22,4 @@ async def test_successful_user_update(
         "createdAt": ANY,
         "updatedAt": ANY,
     }
+    assert response.headers["content-type"] == "application/json"

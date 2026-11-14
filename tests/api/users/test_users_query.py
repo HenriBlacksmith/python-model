@@ -33,6 +33,7 @@ async def test_successful_user_list_no_user(
             "next": None,
         },
     }
+    assert response.headers["content-type"] == "application/json"
 
 
 @pytest.mark.parametrize(
@@ -108,6 +109,7 @@ async def test_successful_user_list_multiple_users_one_page(
             "next": None,
         },
     }
+    assert response.headers["content-type"] == "application/json"
 
 
 async def test_successful_user_list_multiple_users_two_pages(
@@ -163,6 +165,7 @@ async def test_successful_user_list_multiple_users_two_pages(
             "next": "http://blacksmith.local/api/v1/users?page=2&page_size=5",
         },
     }
+    assert response.headers["content-type"] == "application/json"
 
     response = await test_client.get("/api/v1/users?page=2&page_size=5")
 
@@ -193,3 +196,4 @@ async def test_successful_user_list_multiple_users_two_pages(
             "next": None,
         },
     }
+    assert response.headers["content-type"] == "application/json"

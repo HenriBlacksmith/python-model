@@ -18,6 +18,7 @@ async def test_successful_user_retrieval(
         "createdAt": ANY,
         "updatedAt": ANY,
     }
+    assert response.headers["content-type"] == "application/json"
 
 
 async def test_retrieval_of_non_existent_user(test_client: AsyncClient) -> None:

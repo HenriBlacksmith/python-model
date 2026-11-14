@@ -10,3 +10,4 @@ async def test_successful_user_deletion(
 
     assert response.status_code == 204
     assert response.content == b""
+    assert "content-type" not in response.headers
