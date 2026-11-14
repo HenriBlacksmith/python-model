@@ -3,13 +3,12 @@ from fastapi.responses import JSONResponse
 lazy from fastapi import HTTPException, Request, Response
 lazy from fastapi.exceptions import RequestValidationError
 
-from app.api.models.errors import APIErrorResponse
+from app.api.models.errors import APIErrorResponse, ProblemJSONResponse
 
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> Response:
-    return JSONResponse(
+    return ProblemJSONResponse(
         status_code=exc.status_code,
-        media_type="application/problem+json",
         content=jsonable_encoder(
             APIErrorResponse(
                 title=exc.detail,

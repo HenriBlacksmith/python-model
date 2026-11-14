@@ -1,4 +1,10 @@
+from fastapi.responses import JSONResponse
+
 from app.api.models import APIModel
+
+
+class ProblemJSONResponse(JSONResponse):
+    media_type = "application/problem+json"
 
 
 class APIErrorResponse(APIModel):

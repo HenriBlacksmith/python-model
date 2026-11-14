@@ -31,7 +31,11 @@ async def create_user(
     "/users/{user_id}",
     responses={
         404: {
-            "model": APIErrorResponse,
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
             "description": "User not found.",
         },
     },
