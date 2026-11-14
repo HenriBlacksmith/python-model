@@ -5,7 +5,12 @@ lazy from collections.abc import AsyncGenerator
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.telemetry import TelemetryConfig
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.api.handlers import http_exception_handler, validation_exception_handler
 from app.api.routes.router import router
@@ -17,21 +22,31 @@ class State(TypedDict):
     """Application state"""
 
     database_engine: AsyncEngine
+    session_factory: async_sessionmaker[AsyncSession]
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
     """Application lifespan context manager"""
-    connect_args = {}
-    engine = create_async_engine(
+    # During application startup
+    database_engine = create_async_engine(
         settings.database.url.unicode_string(),
-        connect_args=connect_args,
+        connect_args={},
         pool_pre_ping=True,
         pool_recycle=settings.database.pool_recycle,
         pool_size=settings.database.pool_size,
     )
-    yield State(database_engine=engine)
-    await engine.dispose()
+    session_factory = async_sessionmaker(
+        bind=database_engine,
+        expire_on_commit=True,
+    )
+    yield State(
+        database_engine=database_engine,
+        session_factory=session_factory,
+    )
+
+    # During application shutdown
+    await database_engine.dispose()
 
 
 def _get_application() -> FastAPI:

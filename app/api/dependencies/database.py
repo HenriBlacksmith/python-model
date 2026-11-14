@@ -8,7 +8,7 @@ from app.adapters.database.adapter import DatastoreAdapter
 
 
 async def _get_session(request: Request) -> AsyncGenerator[AsyncSession]:
-    async with AsyncSession(request.state.database_engine) as session:
+    async with request.state.session_factory() as session:
         yield session
 
 
