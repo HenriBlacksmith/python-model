@@ -1,5 +1,28 @@
+lazy from collections.abc import AsyncGenerator
+
 import pytest
-lazy from httpx2 import AsyncClient
+from asgi_lifespan import LifespanManager
+from httpx2 import ASGITransport, AsyncClient
+from sqlalchemy.exc import SQLAlchemyError
+lazy from pytest_mock import MockerFixture
+
+from app.main import app
+
+
+@pytest.fixture
+async def test_client_with_failing_database(
+    mocker: MockerFixture,
+) -> AsyncGenerator[AsyncClient]:
+    mocker.patch("app.main.AsyncSession.execute", side_effect=SQLAlchemyError)
+
+    async with (
+        LifespanManager(app) as manager,
+        AsyncClient(
+            transport=ASGITransport(app=manager.app),
+            base_url="http://127.0.0.1:8000",
+        ) as client,
+    ):
+        yield client
 
 
 @pytest.mark.parametrize(
@@ -35,5 +58,23 @@ async def test_readiness_check(test_client: AsyncClient, release_id: str) -> Non
         ],
         "checks": {
             "datastore:health": {"componentType": "datastore", "status": "pass"}
+        },
+    }
+
+
+async def test_readiness_check_fails_when_db_fails(
+    test_client_with_failing_database: AsyncClient, release_id: str
+) -> None:
+    response = await test_client_with_failing_database.get(
+        "/api/v1/health?check_type=readiness"
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {
+        "status": "pass",
+        "version": "v1",
+        "releaseId": release_id,
+        "checks": {
+            "datastore:health": {"componentType": "datastore", "status": "fail"}
         },
     }
