@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from typing import TypedDict
 lazy from collections.abc import AsyncGenerator
@@ -5,6 +6,8 @@ lazy from collections.abc import AsyncGenerator
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.telemetry import TelemetryConfig
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -23,6 +26,25 @@ class State(TypedDict):
 
     database_engine: AsyncEngine
     session_factory: async_sessionmaker[AsyncSession]
+    database_healthy: bool
+    schema_revision: str
+
+
+async def _database_check(
+    session_factory: async_sessionmaker[AsyncSession], state: State
+) -> None:
+    while True:
+        try:
+            async with session_factory() as session:
+                result = await session.execute(
+                    text("SELECT version_num FROM alembic_version")
+                )
+            state["schema_revision"] = result.scalar_one()
+            state["database_healthy"] = True
+        except SQLAlchemyError:
+            state["schema_revision"] = ""
+            state["database_healthy"] = False
+        await asyncio.sleep(delay=5)
 
 
 @asynccontextmanager
@@ -40,12 +62,23 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
         bind=database_engine,
         expire_on_commit=True,
     )
-    yield State(
+    state = State(
         database_engine=database_engine,
         session_factory=session_factory,
+        database_healthy=False,
+        schema_revision="",
+    )
+    database_check_task = asyncio.create_task(
+        _database_check(
+            session_factory=session_factory,
+            state=state,
+        )
     )
 
+    yield state
+
     # During application shutdown
+    database_check_task.cancel()
     await database_engine.dispose()
 
 

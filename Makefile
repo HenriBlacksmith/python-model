@@ -12,7 +12,7 @@ lint:
 	@$(UV) ty check .
 
 test: run-dependencies
-	@$(UV) pytest .
+	@$(UV) pytest . -vvv
 
 build:
 	@docker build .

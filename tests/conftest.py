@@ -31,7 +31,8 @@ async def test_client() -> AsyncGenerator[AsyncClient]:
     async with (
         LifespanManager(app) as manager,
         AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://127.0.0.1:8000"
+            transport=ASGITransport(app=manager.app),
+            base_url="http://127.0.0.1:8000",
         ) as client,
     ):
         yield client
