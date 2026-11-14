@@ -8,9 +8,7 @@ Model project for Python
 https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#using-context-managers-in-dependencies-with-yield
 - Add a global exception handler/middleware
 - Define Core and Adapter exceptions
-- Handle FastAPI HTTPException as RFC 9457 problem details
 - Improve validation error reponses
-- Add error reponses as additional reponses in path operation details
 - Add support for JWT authentication
 - Add Ory OAuth authorization server to the compose setup
 - Run the test database as a pytest fixture in docker
@@ -29,3 +27,5 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Add a paginated GET /users endpoint
 - Add an asynchronous database health check
 - Cleaned default FastAPI 422 codes from the OpenAPI docs
+- Handle FastAPI HTTPException as RFC 9457 problem details
+- Add error reponses as additional reponses in path operation details
