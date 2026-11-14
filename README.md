@@ -10,7 +10,6 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Define Core and Adapter exceptions
 - Handle FastAPI HTTPException as RFC 9457 problem details
 - Improve validation error reponses
-- Cleanup 422 code from the API docs
 - Add error reponses as additional reponses in path operation details
 - Add support for JWT authentication
 - Add Ory OAuth authorization server to the compose setup
@@ -29,3 +28,4 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 
 - Add a paginated GET /users endpoint
 - Add an asynchronous database health check
+- Cleaned default FastAPI 422 codes from the OpenAPI docs

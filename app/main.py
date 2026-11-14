@@ -1,10 +1,12 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import TypedDict
+from types import MethodType
+from typing import Any, TypedDict
 lazy from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.utils import get_openapi
 from fastapi.telemetry import TelemetryConfig
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -55,6 +57,27 @@ async def _database_check(
     while True:
         await asyncio.sleep(delay=5)
         await _check_database(session_factory, database)
+
+
+def configure_openapi(app: FastAPI) -> None:
+    def custom_openapi(self: FastAPI) -> dict[str, Any]:
+        if self.openapi_schema:
+            return self.openapi_schema
+
+        schema = get_openapi(
+            title=self.title,
+            version=self.version,
+            description=self.description,
+            routes=self.routes,
+        )
+        for path_item in schema.get("paths", {}).values():
+            for operation in path_item.values():
+                if isinstance(operation, dict):
+                    operation.get("responses", {}).pop("422", None)
+        self.openapi_schema = schema
+        return schema
+
+    app.__dict__["openapi"] = MethodType(custom_openapi, app)
 
 
 @asynccontextmanager
@@ -108,6 +131,7 @@ def _get_application() -> FastAPI:
     app.include_router(router=router)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(HTTPException, http_exception_handler)  # ty: ignore[invalid-argument-type]
+    configure_openapi(app)
     return app
 
 
