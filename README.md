@@ -18,7 +18,6 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Study logging patterns
 - Add sorting and filtering to GET /users endpoint
 - Investigate correlation id patterns
-- Add an asynchronous database health check
 - Add documentation for the code with mkdocstrings
 - Study performance benchmark patterns
 - Study adding an adapter for an HTTP API
@@ -29,3 +28,4 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 ## Done
 
 - Add a paginated GET /users endpoint
+- Add an asynchronous database health check
