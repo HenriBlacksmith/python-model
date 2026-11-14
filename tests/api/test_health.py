@@ -31,9 +31,9 @@ async def test_readiness_check(test_client: AsyncClient, release_id: str) -> Non
         "version": "v1",
         "releaseId": release_id,
         "notes": [
-            "datastoreSchemaVersion=",
+            "datastoreSchemaVersion=1e7be203686b",
         ],
         "checks": {
-            "datastore:health": {"componentType": "datastore", "status": "fail"}
+            "datastore:health": {"componentType": "datastore", "status": "pass"}
         },
     }

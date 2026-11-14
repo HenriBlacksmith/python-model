@@ -32,14 +32,14 @@ async def health_check(
         status=HealthStatus.PASS,
         version=API_VERSION,
         release_id=constants.version,
-        notes=[f"datastoreSchemaVersion={request.state['schema_revision']}"]
-        if request.state["database_healthy"]
+        notes=[f"datastoreSchemaVersion={request.state['database']['schema_revision']}"]
+        if request.state["database"]["healthy"]
         else None,
         checks={
             "datastore:health": Check(
                 component_type="datastore",
                 status=HealthStatus.PASS
-                if request.state["database_healthy"]
+                if request.state["database"]["healthy"]
                 else HealthStatus.FAIL,
             )
         },

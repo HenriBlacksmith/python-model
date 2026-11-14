@@ -21,30 +21,40 @@ from app.core.config import settings
 from app.core.constants import constants
 
 
+class DatabaseState(TypedDict):
+    healthy: bool
+    schema_revision: str
+
+
 class State(TypedDict):
     """Application state"""
 
     database_engine: AsyncEngine
     session_factory: async_sessionmaker[AsyncSession]
-    database_healthy: bool
-    schema_revision: str
+    database: DatabaseState
+
+
+async def _check_database(
+    session_factory: async_sessionmaker[AsyncSession], database: DatabaseState
+) -> None:
+    try:
+        async with session_factory() as session:
+            result = await session.execute(
+                text("SELECT version_num FROM alembic_version")
+            )
+        database["schema_revision"] = result.scalar_one()
+        database["healthy"] = True
+    except SQLAlchemyError:
+        database["schema_revision"] = ""
+        database["healthy"] = False
 
 
 async def _database_check(
-    session_factory: async_sessionmaker[AsyncSession], state: State
+    session_factory: async_sessionmaker[AsyncSession], database: DatabaseState
 ) -> None:
     while True:
-        try:
-            async with session_factory() as session:
-                result = await session.execute(
-                    text("SELECT version_num FROM alembic_version")
-                )
-            state["schema_revision"] = result.scalar_one()
-            state["database_healthy"] = True
-        except SQLAlchemyError:
-            state["schema_revision"] = ""
-            state["database_healthy"] = False
         await asyncio.sleep(delay=5)
+        await _check_database(session_factory, database)
 
 
 @asynccontextmanager
@@ -62,16 +72,17 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[State]:
         bind=database_engine,
         expire_on_commit=True,
     )
+    database = DatabaseState(healthy=False, schema_revision="")
+    await _check_database(session_factory, database)
     state = State(
         database_engine=database_engine,
         session_factory=session_factory,
-        database_healthy=False,
-        schema_revision="",
+        database=database,
     )
     database_check_task = asyncio.create_task(
         _database_check(
             session_factory=session_factory,
-            state=state,
+            database=database,
         )
     )
 
