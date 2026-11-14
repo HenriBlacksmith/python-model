@@ -8,7 +8,8 @@ Model project for Python
 https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#using-context-managers-in-dependencies-with-yield
 - Add a global exception handler/middleware
 - Define Core and Adapter exceptions
-- Improve validation error reponses
+- Improve validation error reponses using JSON pointer: https://www.rfc-editor.org/info/rfc9457/#name-the-problem-details-json-ob
+- Add details for the 409 code
 - Add support for JWT authentication
 - Add Ory OAuth authorization server to the compose setup
 - Run the test database as a pytest fixture in docker
