@@ -1,5 +1,6 @@
 from unittest.mock import ANY
 
+import pytest
 lazy from httpx2 import AsyncClient
 
 
@@ -35,6 +36,27 @@ async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> 
         "title": "The request was invalid.",
         "type": "about:blank",
         "detail": "",
+        "instance": "/api/v1/users",
+    }
+    assert response.headers["content-type"] == "application/problem+json"
+
+
+@pytest.mark.usefixtures("test_user")
+async def test_user_creation_with_conflicting_username(
+    test_client: AsyncClient,
+) -> None:
+    response = await test_client.post(
+        "/api/v1/users",
+        json={
+            "username": "testuser",
+        },
+    )
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "status": 409,
+        "title": "The requested username is already in use.",
+        "type": "about:blank",
         "instance": "/api/v1/users",
     }
     assert response.headers["content-type"] == "application/problem+json"

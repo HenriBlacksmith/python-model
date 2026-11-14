@@ -27,6 +27,8 @@ def upgrade() -> None:
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
     );""")
 
+    op.execute("CREATE UNIQUE INDEX name_unique_idx ON users (name);")
+
     op.execute("""
     CREATE FUNCTION set_updated_at() RETURNS trigger
     LANGUAGE plpgsql AS

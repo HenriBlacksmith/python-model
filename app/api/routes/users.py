@@ -10,7 +10,7 @@ from app.api.models.pagination import (
     PaginationQueryParameters,
 )
 from app.api.models.users import UserRequest, UserResponse
-from app.core.errors import UserNotFoundError
+from app.core.errors import UsernameAlreadyInUseError, UserNotFoundError
 lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter(tags=[Tags.Users])
@@ -36,7 +36,10 @@ async def create_user(
     """
     Create a new user in the system.
     """
-    user = await users_controller.create_user(user_request.username)
+    try:
+        user = await users_controller.create_user(user_request.username)
+    except UsernameAlreadyInUseError as err:
+        raise HTTPException(status_code=409, detail=err.message) from err
     return UserResponse.from_core_model(user)
 
 
@@ -50,6 +53,14 @@ async def create_user(
                 },
             },
             "description": "User not found.",
+        },
+        409: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "The requested username is already in use.",
         },
     },
 )

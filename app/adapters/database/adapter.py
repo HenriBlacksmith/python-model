@@ -1,10 +1,11 @@
 lazy from uuid import UUID
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 lazy from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.models import User
-from app.core.errors import UserNotFoundError
+from app.core.errors import UsernameAlreadyInUseError, UserNotFoundError
 from app.core.ports.datastore import DatastorePort
 lazy from app.core.models.users import User as CoreUser
 lazy from app.core.models.users import UserRequest
@@ -17,7 +18,10 @@ class DatastoreAdapter(DatastorePort):
     async def create_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = User(id=user_id, name=user_request.name)
         self._session.add(user)
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except IntegrityError as err:
+            raise UsernameAlreadyInUseError from err
         await self._session.refresh(user)
         return user.to_core_model()
 
