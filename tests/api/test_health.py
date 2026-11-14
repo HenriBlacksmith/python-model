@@ -43,6 +43,7 @@ async def test_liveness_check(
         "version": "v1",
         "releaseId": release_id,
     }
+    assert response.headers["content-type"] == "application/health+json"
 
 
 async def test_readiness_check(test_client: AsyncClient, release_id: str) -> None:
@@ -60,6 +61,7 @@ async def test_readiness_check(test_client: AsyncClient, release_id: str) -> Non
             "datastore:health": {"componentType": "datastore", "status": "pass"}
         },
     }
+    assert response.headers["content-type"] == "application/health+json"
 
 
 async def test_readiness_check_fails_when_db_fails(
@@ -78,3 +80,4 @@ async def test_readiness_check_fails_when_db_fails(
             "datastore:health": {"componentType": "datastore", "status": "fail"}
         },
     }
+    assert response.headers["content-type"] == "application/health+json"

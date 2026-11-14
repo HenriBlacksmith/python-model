@@ -3,7 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Request, Response, status
 
 from app.api import API_VERSION, Tags
-from app.api.models.health import Check, CheckType, HealthCheckResponse, HealthStatus
+from app.api.models.health import (
+    Check,
+    CheckType,
+    HealthCheckResponse,
+    HealthJSONResponse,
+    HealthStatus,
+)
 from app.core.constants import constants
 
 router = APIRouter(tags=[Tags.Health])
@@ -11,6 +17,7 @@ router = APIRouter(tags=[Tags.Health])
 
 @router.get(
     "/health",
+    response_class=HealthJSONResponse,
     response_model_exclude_none=True,
 )
 async def health_check(

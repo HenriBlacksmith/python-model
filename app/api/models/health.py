@@ -1,6 +1,12 @@
 from enum import StrEnum
 
+from fastapi.responses import JSONResponse
+
 from app.api.models import APIModel
+
+
+class HealthJSONResponse(JSONResponse):
+    media_type = "application/health+json"
 
 
 class CheckType(StrEnum):
