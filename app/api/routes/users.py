@@ -83,7 +83,19 @@ async def list_users(
     )
 
 
-@router.put("/users/{user_id}")
+@router.put(
+    "/users/{user_id}",
+    responses={
+        404: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "User not found.",
+        },
+    },
+)
 async def update_user(
     users_controller: UsersControllerDepends, user_id: UUID, user_request: UserRequest
 ) -> UserResponse:
