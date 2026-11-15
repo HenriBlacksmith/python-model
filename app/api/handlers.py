@@ -25,6 +25,20 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Respon
     )
 
 
+async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
+    return ProblemJSONResponse(
+        status_code=500,
+        content=jsonable_encoder(
+            APIErrorResponse(
+                title="An unexpected error occurred.",
+                status=500,
+                instance=request.url.path,
+            ),
+            exclude_none=True,
+        ),
+    )
+
+
 def _loc_to_json_pointer(loc: str) -> str:
     return "#/" + "/".join(loc[1:])
 
