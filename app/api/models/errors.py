@@ -15,3 +15,12 @@ class APIErrorResponse(APIModel):
     detail: str | None = None
     status: int
     instance: str | None = None
+
+
+class APIValidationError(APIModel):
+    detail: str
+    pointer: str
+
+
+class APIValidationErrorResponse(APIErrorResponse):
+    errors: list[APIValidationError]

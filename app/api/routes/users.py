@@ -4,7 +4,7 @@ lazy from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api import Tags
-from app.api.models.errors import APIErrorResponse
+from app.api.models.errors import APIErrorResponse, APIValidationErrorResponse
 from app.api.models.pagination import (
     PaginatedResponse,
     PaginationQueryParameters,
@@ -23,7 +23,7 @@ router = APIRouter(tags=[Tags.Users])
         400: {
             "content": {
                 "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
+                    "schema": APIValidationErrorResponse.model_json_schema(),
                 },
             },
             "description": "The request was invalid.",
