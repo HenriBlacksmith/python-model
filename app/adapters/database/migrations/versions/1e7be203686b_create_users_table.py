@@ -42,6 +42,28 @@ def upgrade() -> None:
     BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
     """)
+    op.execute("""
+    CREATE OR REPLACE FUNCTION user_events() RETURNS TRIGGER AS $$
+    DECLARE
+        payload JSON;
+        record_data JSON;
+    BEGIN
+         IF (TG_OP = 'DELETE') THEN
+            record_data = row_to_json(OLD);
+        ELSE
+            record_data = row_to_json(NEW);
+        END IF;
+        payload = json_build_object('action', TG_OP, 'data', record_data);
+        PERFORM pg_notify('user_events', payload::text);
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+    """)
+    op.execute("""
+    CREATE TRIGGER user_events_trigger
+    AFTER INSERT OR UPDATE OR DELETE ON users
+    FOR EACH ROW EXECUTE FUNCTION user_events();
+    """)
 
 
 def downgrade() -> None:
