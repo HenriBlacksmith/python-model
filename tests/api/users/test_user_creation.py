@@ -27,6 +27,7 @@ async def test_successful_user_creation(test_client: AsyncClient) -> None:
     [
         ("", "String should have at least 2 characters"),
         ("A", "String should have at least 2 characters"),
+        ("Ac", "String should match pattern '^[a-z][a-z_]*[a-z]$'"),
         ("a" * 101, "String should have at most 100 characters"),
     ],
 )

@@ -9,7 +9,9 @@ lazy from app.core.models.users import User
 
 
 class _UserBase(APIModel):
-    username: Annotated[str, Field(min_length=2, max_length=100)]
+    username: Annotated[
+        str, Field(min_length=2, max_length=100, pattern="^[a-z][a-z_]*[a-z]$")
+    ]
 
 
 class UserRequest(_UserBase): ...
