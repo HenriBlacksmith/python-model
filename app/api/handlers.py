@@ -37,7 +37,7 @@ async def validation_exception_handler(
         media_type="application/problem+json",
         content=jsonable_encoder(
             APIValidationErrorResponse(
-                detail="",
+                detail=None,
                 instance=request.url.path,
                 errors=[
                     APIValidationError(
@@ -46,6 +46,7 @@ async def validation_exception_handler(
                     )
                     for e in err.errors()
                 ],
-            )
+            ),
+            exclude_none=True,
         ),
     )

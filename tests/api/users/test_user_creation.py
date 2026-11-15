@@ -45,7 +45,6 @@ async def test_user_creation_with_invalid_username(
         "status": 400,
         "title": "The request was invalid.",
         "type": "about:blank",
-        "detail": "",
         "instance": "/api/v1/users",
         "errors": [
             {
