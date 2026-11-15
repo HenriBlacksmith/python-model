@@ -1,5 +1,6 @@
 from unittest.mock import ANY
 from uuid import uuid4
+lazy from collections.abc import Callable, Coroutine
 
 import pytest
 lazy from httpx2 import AsyncClient
@@ -25,6 +26,29 @@ async def test_successful_user_update(
         "updatedAt": ANY,
     }
     assert response.headers["content-type"] == "application/json"
+
+
+async def test_user_update_with_conflicting_username(
+    test_client: AsyncClient,
+    create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
+) -> None:
+    users = await create_test_users(["testuser", "otheruser"])
+
+    response = await test_client.put(
+        f"/api/v1/users/{users[1].id}",
+        json={
+            "username": "testuser",
+        },
+    )
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "status": 409,
+        "title": "The requested username is already in use.",
+        "type": "about:blank",
+        "instance": f"/api/v1/users/{users[1].id}",
+    }
+    assert response.headers["content-type"] == "application/problem+json"
 
 
 @pytest.mark.parametrize(

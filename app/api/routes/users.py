@@ -105,6 +105,14 @@ async def list_users(
             },
             "description": "User not found.",
         },
+        409: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "The requested username is already in use.",
+        },
     },
 )
 async def update_user(
@@ -118,6 +126,8 @@ async def update_user(
         return UserResponse.from_core_model(user)
     except UserNotFoundError as err:
         raise HTTPException(status_code=404, detail=err.message) from err
+    except UsernameAlreadyInUseError as err:
+        raise HTTPException(status_code=409, detail=err.message) from err
 
 
 @router.delete(
