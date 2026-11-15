@@ -1,3 +1,4 @@
+import logging
 from uuid import uuid4
 lazy from collections.abc import AsyncGenerator
 
@@ -44,3 +45,26 @@ async def test_unhandled_exception_returns_problem_json(
         "instance": f"/api/v1/users/{user_id}",
     }
     assert response.headers["content-type"] == "application/problem+json"
+
+
+async def test_unhandled_exception_is_logged(
+    test_client_with_raised_app_exceptions: AsyncClient,
+    mocker: MockerFixture,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    user_id = uuid4()
+    mocker.patch.object(
+        UsersController,
+        "get_user",
+        side_effect=RuntimeError("Unexpected error"),
+    )
+
+    with caplog.at_level(logging.ERROR):
+        response = await test_client_with_raised_app_exceptions.get(
+            f"/api/v1/users/{user_id}"
+        )
+
+    assert response.status_code == 500
+    assert "Unhandled exception on GET /api/v1/users/" in caplog.text
+    assert "Unexpected error" in caplog.text
+    assert any(record.exc_info for record in caplog.records)

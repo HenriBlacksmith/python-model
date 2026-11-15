@@ -1,3 +1,5 @@
+import logging
+
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 lazy from fastapi import HTTPException, Request, Response
@@ -9,6 +11,8 @@ from app.api.models.errors import (
     APIValidationErrorResponse,
     ProblemJSONResponse,
 )
+
+logger = logging.getLogger(__name__)
 
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> Response:
@@ -26,6 +30,9 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Respon
 
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
+    logger.exception(
+        "Unhandled exception on %s %s", request.method, request.url.path
+    )
     return ProblemJSONResponse(
         status_code=500,
         content=jsonable_encoder(
