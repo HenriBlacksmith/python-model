@@ -36,17 +36,20 @@ async def health_check(
             notes=None,
             checks=None,
         )
-    datastore_health_status = HealthStatus.FAIL
-    notes = None
-    response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    if request.state["database"]["healthy"]:
+    database_state = request.state.database
+    datastore_health_status = (
+        HealthStatus.PASS if database_state["healthy"] else HealthStatus.FAIL
+    )
+    if datastore_health_status == HealthStatus.PASS:
         response.status_code = status.HTTP_200_OK
-        datastore_health_status = HealthStatus.PASS
         notes = [
-            f"datastoreSchemaVersion={request.state['database']['schema_revision']}"
+            f"datastoreSchemaVersion={database_state['schema_revision']}",
         ]
+    else:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        notes = None
     return HealthCheckResponse(
-        status=HealthStatus.PASS,
+        status=datastore_health_status,
         version=API_VERSION,
         release_id=constants.version,
         notes=notes,
