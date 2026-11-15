@@ -1,6 +1,7 @@
 from unittest.mock import ANY
 from uuid import uuid4
 
+import pytest
 lazy from httpx2 import AsyncClient
 
 from app.adapters.database.models import User
@@ -24,6 +25,44 @@ async def test_successful_user_update(
         "updatedAt": ANY,
     }
     assert response.headers["content-type"] == "application/json"
+
+
+@pytest.mark.parametrize(
+    ("invalid_username", "expected_error_detail"),
+    [
+        ("", "String should have at least 2 characters"),
+        ("A", "String should have at least 2 characters"),
+        ("Ac", "String should match pattern '^[a-z][a-z_]*[a-z]$'"),
+        ("a" * 101, "String should have at most 100 characters"),
+    ],
+)
+async def test_user_update_with_invalid_username(
+    test_client: AsyncClient,
+    test_user: User,
+    invalid_username: str,
+    expected_error_detail: str,
+) -> None:
+    response = await test_client.put(
+        f"/api/v1/users/{test_user.id}",
+        json={
+            "username": invalid_username,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "status": 400,
+        "title": "The request was invalid.",
+        "type": "about:blank",
+        "instance": f"/api/v1/users/{test_user.id}",
+        "errors": [
+            {
+                "detail": expected_error_detail,
+                "pointer": "#/username",
+            },
+        ],
+    }
+    assert response.headers["content-type"] == "application/problem+json"
 
 
 async def test_update_of_non_existing_user(test_client: AsyncClient) -> None:
