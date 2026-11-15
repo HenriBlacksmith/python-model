@@ -1,5 +1,5 @@
-from collections.abc import Callable, Coroutine
 from unittest.mock import ANY
+lazy from collections.abc import Callable, Coroutine
 from uuid import uuid4
 
 import pytest
