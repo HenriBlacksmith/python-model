@@ -22,11 +22,21 @@ async def test_successful_user_creation(test_client: AsyncClient) -> None:
     assert response.headers["content-type"] == "application/json"
 
 
-async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> None:
+@pytest.mark.parametrize(
+    ("invalid_username", "expected_error_detail"),
+    [
+        ("", "String should have at least 2 characters"),
+        ("A", "String should have at least 2 characters"),
+        ("a" * 101, "String should have at most 100 characters"),
+    ],
+)
+async def test_user_creation_with_invalid_username(
+    test_client: AsyncClient, invalid_username: str, expected_error_detail: str
+) -> None:
     response = await test_client.post(
         "/api/v1/users",
         json={
-            "username": "",
+            "username": invalid_username,
         },
     )
 
@@ -37,7 +47,12 @@ async def test_user_creation_with_invalid_username(test_client: AsyncClient) -> 
         "type": "about:blank",
         "detail": "",
         "instance": "/api/v1/users",
-        "errors": [],
+        "errors": [
+            {
+                "detail": expected_error_detail,
+                "pointer": "#/username",
+            },
+        ],
     }
     assert response.headers["content-type"] == "application/problem+json"
 

@@ -8,7 +8,6 @@ Model project for Python
 https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#using-context-managers-in-dependencies-with-yield
 - Add a global exception handler/middleware
 - Define Core and Adapter exceptions
-- Improve validation error reponses using JSON pointer: https://www.rfc-editor.org/info/rfc9457/#name-the-problem-details-json-ob
 - Add details for the 409 code
 - Add support for JWT authentication
 - Add Ory OAuth authorization server to the compose setup
@@ -30,3 +29,4 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Cleaned default FastAPI 422 codes from the OpenAPI docs
 - Handle FastAPI HTTPException as RFC 9457 problem details
 - Add error reponses as additional reponses in path operation details
+- Improve validation error reponses using JSON pointer: https://www.rfc-editor.org/info/rfc9457/#name-the-problem-details-json-ob

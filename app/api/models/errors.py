@@ -23,4 +23,6 @@ class APIValidationError(APIModel):
 
 
 class APIValidationErrorResponse(APIErrorResponse):
+    title: str = "The request was invalid."
+    status: int = 400
     errors: list[APIValidationError]
