@@ -1,19 +1,44 @@
+import asyncio
+import json
+lazy from collections.abc import AsyncGenerator
 lazy from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
+lazy import asyncpg
 lazy from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.models import User
 from app.core.errors import UsernameAlreadyInUseError, UserNotFoundError
 from app.core.ports.datastore import DatastorePort
+lazy from app.core.models.users import EventType, UserEvent, UserRequest
 lazy from app.core.models.users import User as CoreUser
-lazy from app.core.models.users import UserRequest
+
+
+def _action_to_event_type(action: str) -> EventType:
+    match action:
+        case "INSERT":
+            return EventType.CREATION
+        case "UPDATE":
+            return EventType.UPDATE
+        case "DELETE":
+            return EventType.DELETION
+        case _:
+            raise Exception(f"Unknown action: {action}")
 
 
 class DatastoreAdapter(DatastorePort):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    @property
+    async def _asyncpg_connection(self) -> asyncpg.Connection:
+        # Get asyncpg connection for gathering events
+        _connection = await self._session.connection()
+        _raw_connection = await _connection.get_raw_connection()
+        if _raw_connection and _raw_connection.driver_connection:
+            return _raw_connection.driver_connection
+        raise Exception("Unable to acquire asyncpg connection")
 
     async def create_user(self, user_id: UUID, user_request: UserRequest) -> CoreUser:
         user = User(id=user_id, name=user_request.name)
@@ -60,3 +85,44 @@ class DatastoreAdapter(DatastorePort):
             raise UserNotFoundError
         await self._session.delete(user)
         await self._session.commit()
+
+    def user_events(self, disconnected: asyncio.Event) -> AsyncGenerator[UserEvent]:
+        async def _event_generator() -> AsyncGenerator[UserEvent]:
+            queue: asyncio.Queue[UserEvent] = asyncio.Queue()
+
+            def _callback(
+                _connection: asyncpg.Connection,
+                _pid: int,
+                _channel: str,
+                payload: str,
+            ) -> None:
+                action = json.loads(payload)["action"]
+                event_type = _action_to_event_type(action)
+                queue.put_nowait(UserEvent(event_type=event_type))
+
+            connection = await self._asyncpg_connection
+            channel = "user_events"
+            await connection.add_listener(channel=channel, callback=_callback)
+            try:
+                while not disconnected.is_set():
+                    event_task = asyncio.create_task(queue.get())
+                    disconnect_task = asyncio.create_task(disconnected.wait())
+                    try:
+                        done, _ = await asyncio.wait(
+                            {event_task, disconnect_task},
+                            return_when=asyncio.FIRST_COMPLETED,
+                        )
+                        if disconnect_task in done:
+                            return
+                        yield event_task.result()
+                    finally:
+                        for task in (event_task, disconnect_task):
+                            if not task.done():
+                                task.cancel()
+                        await asyncio.gather(
+                            event_task, disconnect_task, return_exceptions=True
+                        )
+            finally:
+                await connection.remove_listener(channel=channel, callback=_callback)
+
+        return _event_generator()

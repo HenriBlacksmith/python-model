@@ -6,6 +6,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from asgi_lifespan import LifespanManager
+from fastmcp.utilities.asgi_transport import StreamingASGITransport
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import (
@@ -36,6 +37,18 @@ async def test_client() -> AsyncGenerator[AsyncClient]:
         ) as client,
     ):
         yield client
+
+
+@pytest.fixture
+async def sse_test_client() -> AsyncGenerator[AsyncClient]:
+    async with LifespanManager(app) as manager:
+        yield AsyncClient(
+            transport=StreamingASGITransport(
+                manager.app,
+                cancel_on_close=False,
+            ),
+            base_url="http://127.0.0.1:8000",
+        )
 
 
 @pytest.fixture(scope="session")
