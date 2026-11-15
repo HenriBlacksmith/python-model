@@ -69,5 +69,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     op.execute("DROP TRIGGER IF EXISTS users_update_trigger ON users;")
+    op.execute("DROP TRIGGER IF EXISTS user_events_trigger ON users;")
     op.execute("DROP FUNCTION IF EXISTS set_updated_at();")
+    op.execute("DROP FUNCTION IF EXISTS user_events();")
     op.execute("DROP TABLE IF EXISTS users;")
