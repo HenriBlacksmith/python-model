@@ -1,6 +1,6 @@
 from unittest.mock import ANY
-lazy from collections.abc import Callable, Coroutine
 from uuid import uuid4
+lazy from collections.abc import Callable, Coroutine
 
 import pytest
 lazy from httpx2 import AsyncClient
