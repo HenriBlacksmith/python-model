@@ -73,7 +73,7 @@ async def test_readiness_check_fails_when_db_fails(
 
     assert response.status_code == 503
     assert response.json() == {
-        "status": "pass",
+        "status": "fail",
         "version": "v1",
         "releaseId": release_id,
         "checks": {
