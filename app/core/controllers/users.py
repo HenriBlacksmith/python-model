@@ -1,5 +1,4 @@
 from uuid import UUID, uuid4
-lazy from asyncio import Event
 lazy from collections.abc import AsyncGenerator
 
 from app.core.models.users import User, UserEvent, UserRequest
@@ -45,8 +44,8 @@ class UsersController:
         """
         await self._datastore.delete_user(user_id)
 
-    async def user_events(self, disconnected: Event) -> AsyncGenerator[UserEvent]:
+    def user_events(self) -> AsyncGenerator[UserEvent]:
         """
         Stream user events.
         """
-        return self._datastore.user_events(disconnected)
+        return self._datastore.user_events()

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 lazy from collections.abc import AsyncGenerator
 lazy from uuid import UUID
 
@@ -14,6 +15,8 @@ from app.core.ports.datastore import DatastorePort
 lazy from app.core.models.users import EventType, UserEvent, UserRequest
 lazy from app.core.models.users import User as CoreUser
 
+logger = logging.getLogger(__name__)
+
 
 def _action_to_event_type(action: str) -> EventType:
     match action:
@@ -24,7 +27,7 @@ def _action_to_event_type(action: str) -> EventType:
         case "DELETE":
             return EventType.DELETION
         case _:
-            raise Exception(f"Unknown action: {action}")
+            raise ValueError(f"Unknown action: {action}")
 
 
 class DatastoreAdapter(DatastorePort):
@@ -91,7 +94,7 @@ class DatastoreAdapter(DatastorePort):
         await self._session.delete(user)
         await self._session.commit()
 
-    def user_events(self, disconnected: asyncio.Event) -> AsyncGenerator[UserEvent]:
+    def user_events(self) -> AsyncGenerator[UserEvent]:
         async def _event_generator() -> AsyncGenerator[UserEvent]:
             queue: asyncio.Queue[UserEvent] = asyncio.Queue()
 
@@ -101,32 +104,20 @@ class DatastoreAdapter(DatastorePort):
                 _channel: str,
                 payload: str,
             ) -> None:
-                action = json.loads(payload)["action"]
-                event_type = _action_to_event_type(action)
+                try:
+                    action = json.loads(payload)["action"]
+                    event_type = _action_to_event_type(action)
+                except json.JSONDecodeError, KeyError, ValueError:
+                    logger.warning("Dropping malformed user event payload: %s", payload)
+                    return
                 queue.put_nowait(UserEvent(event_type=event_type))
 
             connection = await self._asyncpg_connection
             channel = "user_events"
             await connection.add_listener(channel=channel, callback=_callback)
             try:
-                while not disconnected.is_set():
-                    event_task = asyncio.create_task(queue.get())
-                    disconnect_task = asyncio.create_task(disconnected.wait())
-                    try:
-                        done, _ = await asyncio.wait(
-                            {event_task, disconnect_task},
-                            return_when=asyncio.FIRST_COMPLETED,
-                        )
-                        if disconnect_task in done:
-                            return
-                        yield event_task.result()
-                    finally:
-                        for task in (event_task, disconnect_task):
-                            if not task.done():
-                                task.cancel()
-                        await asyncio.gather(
-                            event_task, disconnect_task, return_exceptions=True
-                        )
+                while True:
+                    yield await queue.get()
             finally:
                 await connection.remove_listener(channel=channel, callback=_callback)
 

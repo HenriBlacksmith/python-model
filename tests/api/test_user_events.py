@@ -1,4 +1,4 @@
-lazy import asyncio
+import asyncio
 lazy from collections.abc import AsyncIterator
 
 import pytest
@@ -11,16 +11,15 @@ from app.main import app
 
 class _FakeUsersController:
     def __init__(self) -> None:
-        self.disconnected: asyncio.Event | None = None
+        self.closed = False
 
-    async def user_events(
-        self, disconnected: asyncio.Event
-    ) -> AsyncIterator[UserEvent]:
-        self.disconnected = disconnected
-
+    def user_events(self) -> AsyncIterator[UserEvent]:
         async def _events() -> AsyncIterator[UserEvent]:
-            yield UserEvent(event_type=EventType.CREATION)
-            await disconnected.wait()
+            try:
+                yield UserEvent(event_type=EventType.CREATION)
+                await asyncio.Event().wait()
+            finally:
+                self.closed = True
 
         return _events()
 
@@ -48,5 +47,4 @@ async def test_user_events_propagates_disconnect(
             assert event.event == "creation"
             break
 
-    assert users_controller.disconnected is not None
-    assert users_controller.disconnected.is_set()
+    assert users_controller.closed

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-lazy from asyncio import Event
 lazy from collections.abc import AsyncGenerator
 lazy from uuid import UUID
 
@@ -25,4 +24,4 @@ class DatastorePort(ABC):
     async def delete_user(self, user_id: UUID) -> None: ...
 
     @abstractmethod
-    def user_events(self, disconnected: Event) -> AsyncGenerator[UserEvent]: ...
+    def user_events(self) -> AsyncGenerator[UserEvent]: ...
