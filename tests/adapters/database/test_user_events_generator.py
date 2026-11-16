@@ -23,9 +23,7 @@ class _FakeAsyncpgConnection:
     async def add_listener(self, channel: str, callback: UserEventCallback) -> None:
         self.callback = callback
 
-    async def remove_listener(
-        self, channel: str, callback: UserEventCallback
-    ) -> None:
+    async def remove_listener(self, channel: str, callback: UserEventCallback) -> None:
         self.listener_removed = True
 
 

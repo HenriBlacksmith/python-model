@@ -108,9 +108,7 @@ class DatastoreAdapter(DatastorePort):
                     action = json.loads(payload)["action"]
                     event_type = _action_to_event_type(action)
                 except (json.JSONDecodeError, KeyError, ValueError):
-                    logger.warning(
-                        "Dropping malformed user event payload: %s", payload
-                    )
+                    logger.warning("Dropping malformed user event payload: %s", payload)
                     return
                 queue.put_nowait(UserEvent(event_type=event_type))
 
