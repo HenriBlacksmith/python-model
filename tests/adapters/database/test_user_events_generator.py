@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 lazy from collections.abc import Callable
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 lazy from pytest_mock import MockerFixture
+lazy from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.database.adapter import DatastoreAdapter, _action_to_event_type
 from app.core.models.users import EventType, UserEvent
@@ -20,12 +20,14 @@ class _FakeAsyncpgConnection:
         self.listener_removed = False
         self.registered = asyncio.Event()
 
-    async def add_listener(self, *args: Any, callback: UserEventCallback) -> None:
+    async def add_listener(self, channel: str, callback: UserEventCallback) -> None:
+        self.channel = channel
         self.callback = callback
         self.registered.set()
 
-    async def remove_listener(self, *args: Any, **kwargs: Any) -> None:
-        self.listener_removed = True
+    async def remove_listener(self, channel: str, callback: UserEventCallback) -> None:
+        self.channel = channel
+        self.listener_removed = callback is self.callback
 
 
 @pytest.mark.parametrize(
