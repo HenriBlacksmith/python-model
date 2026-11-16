@@ -2,12 +2,11 @@ import asyncio
 import json
 from typing import Any, cast
 from unittest.mock import MagicMock
-from uuid import uuid4
-lazy from collections.abc import AsyncGenerator, Callable
+lazy from collections.abc import Callable
 
 import pytest
-lazy from pytest_mock import MockerFixture
 from sqlalchemy.ext.asyncio import AsyncSession
+lazy from pytest_mock import MockerFixture
 
 from app.adapters.database.adapter import DatastoreAdapter, _action_to_event_type
 from app.core.models.users import EventType, UserEvent
@@ -19,11 +18,17 @@ class _FakeAsyncpgConnection:
     def __init__(self) -> None:
         self.callback: UserEventCallback | None = None
         self.listener_removed = False
+        self.registered = asyncio.Event()
 
-    async def add_listener(self, channel: str, callback: UserEventCallback) -> None:
+    async def add_listener(
+        self, _channel: str, callback: UserEventCallback
+    ) -> None:
         self.callback = callback
+        self.registered.set()
 
-    async def remove_listener(self, channel: str, callback: UserEventCallback) -> None:
+    async def remove_listener(
+        self, _channel: str, _callback: UserEventCallback
+    ) -> None:
         self.listener_removed = True
 
 
@@ -48,7 +53,7 @@ def test_action_to_event_type_with_unknown_action(action: str) -> None:
 def _make_adapter(
     fake_connection: _FakeAsyncpgConnection, mocker: MockerFixture
 ) -> DatastoreAdapter:
-    async def _fake_connection(self: DatastoreAdapter) -> _FakeAsyncpgConnection:
+    async def _fake_connection(_self: DatastoreAdapter) -> _FakeAsyncpgConnection:
         return fake_connection
 
     mocker.patch.object(
@@ -56,7 +61,7 @@ def _make_adapter(
         "_asyncpg_connection",
         property(_fake_connection),
     )
-    return DatastoreAdapter(session=cast(AsyncSession, MagicMock()))
+    return DatastoreAdapter(session=cast("AsyncSession", MagicMock()))
 
 
 @pytest.mark.timeout(5.0)
@@ -68,8 +73,7 @@ async def test_user_events_generator_yields_events_in_order(
     generator = adapter.user_events()
 
     first_task = asyncio.create_task(anext(generator))
-    while fake_connection.callback is None:
-        await asyncio.sleep(0)
+    await fake_connection.registered.wait()
     fake_connection.callback(None, 0, "user_events", json.dumps({"action": "INSERT"}))
     fake_connection.callback(None, 0, "user_events", json.dumps({"action": "UPDATE"}))
 
@@ -93,8 +97,7 @@ async def test_user_events_generator_drops_malformed_payloads(
     generator = adapter.user_events()
 
     first_task = asyncio.create_task(anext(generator))
-    while fake_connection.callback is None:
-        await asyncio.sleep(0)
+    await fake_connection.registered.wait()
     fake_connection.callback(None, 0, "user_events", "not-json")
     fake_connection.callback(None, 0, "user_events", json.dumps({"nope": 1}))
     fake_connection.callback(None, 0, "user_events", json.dumps({"action": "TRUNCATE"}))
