@@ -29,6 +29,11 @@ class _FakeAsyncpgConnection:
         self.channel = channel
         self.listener_removed = callback is self.callback
 
+    def notify(self, payload: str) -> None:
+        if self.callback is None:
+            raise AssertionError("listener not registered")
+        self.callback(None, 0, self.channel, payload)
+
 
 @pytest.mark.parametrize(
     ("action", "expected_event_type"),
@@ -72,8 +77,8 @@ async def test_user_events_generator_yields_events_in_order(
 
     first_task = asyncio.create_task(anext(generator))
     await fake_connection.registered.wait()
-    fake_connection.callback(None, 0, "user_events", json.dumps({"action": "INSERT"}))
-    fake_connection.callback(None, 0, "user_events", json.dumps({"action": "UPDATE"}))
+    fake_connection.notify(json.dumps({"action": "INSERT"}))
+    fake_connection.notify(json.dumps({"action": "UPDATE"}))
 
     first_event = await asyncio.wait_for(first_task, timeout=1.0)
     second_event = await asyncio.wait_for(anext(generator), timeout=1.0)
@@ -96,10 +101,10 @@ async def test_user_events_generator_drops_malformed_payloads(
 
     first_task = asyncio.create_task(anext(generator))
     await fake_connection.registered.wait()
-    fake_connection.callback(None, 0, "user_events", "not-json")
-    fake_connection.callback(None, 0, "user_events", json.dumps({"nope": 1}))
-    fake_connection.callback(None, 0, "user_events", json.dumps({"action": "TRUNCATE"}))
-    fake_connection.callback(None, 0, "user_events", json.dumps({"action": "DELETE"}))
+    fake_connection.notify("not-json")
+    fake_connection.notify(json.dumps({"nope": 1}))
+    fake_connection.notify(json.dumps({"action": "TRUNCATE"}))
+    fake_connection.notify(json.dumps({"action": "DELETE"}))
 
     event = await asyncio.wait_for(first_task, timeout=1.0)
 
