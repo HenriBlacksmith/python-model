@@ -4,7 +4,11 @@ lazy from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
 from app.api import Tags
-from app.api.models.errors import APIErrorResponse, APIValidationErrorResponse
+from app.api.models.errors import (
+    APIErrorResponse,
+    APIUnhandledErrorResponse,
+    APIValidationErrorResponse,
+)
 from app.api.models.pagination import (
     PaginatedResponse,
     PaginationQueryParameters,
@@ -27,6 +31,14 @@ router = APIRouter(tags=[Tags.Users])
                 },
             },
             "description": "The request was invalid.",
+        },
+        500: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIUnhandledErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "An unexpected error occurred.",
         },
     },
 )
@@ -62,6 +74,14 @@ async def create_user(
             },
             "description": "The requested username is already in use.",
         },
+        500: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIUnhandledErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "An unexpected error occurred.",
+        },
     },
 )
 async def get_user(
@@ -77,7 +97,19 @@ async def get_user(
         raise HTTPException(status_code=404, detail=err.message) from err
 
 
-@router.get("/users")
+@router.get(
+    "/users",
+    responses={
+        500: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIUnhandledErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "An unexpected error occurred.",
+        },
+    },
+)
 async def list_users(
     users_controller: UsersControllerDepends,
     pagination_query: Annotated[PaginationQueryParameters, Query()],
@@ -113,6 +145,14 @@ async def list_users(
             },
             "description": "The requested username is already in use.",
         },
+        500: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIUnhandledErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "An unexpected error occurred.",
+        },
     },
 )
 async def update_user(
@@ -142,6 +182,14 @@ async def update_user(
                 },
             },
             "description": "User not found.",
+        },
+        500: {
+            "content": {
+                "application/problem+json": {
+                    "schema": APIUnhandledErrorResponse.model_json_schema(),
+                },
+            },
+            "description": "An unexpected error occurred.",
         },
     },
 )

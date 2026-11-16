@@ -7,6 +7,7 @@ lazy from fastapi.exceptions import RequestValidationError
 
 from app.api.models.errors import (
     APIErrorResponse,
+    APIUnhandledErrorResponse,
     APIValidationError,
     APIValidationErrorResponse,
     ProblemJSONResponse,
@@ -39,9 +40,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> Respo
     return ProblemJSONResponse(
         status_code=500,
         content=jsonable_encoder(
-            APIErrorResponse(
-                title="An unexpected error occurred.",
-                status=500,
+            APIUnhandledErrorResponse(
                 instance=request.url.path,
             ),
             exclude_none=True,

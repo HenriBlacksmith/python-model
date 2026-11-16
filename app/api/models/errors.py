@@ -26,3 +26,8 @@ class APIValidationErrorResponse(APIErrorResponse):
     title: str = "The request was invalid."
     status: int = 400
     errors: list[APIValidationError]
+
+
+class APIUnhandledErrorResponse(APIErrorResponse):
+    title: str = "An unexpected error occurred."
+    status: int = 500
