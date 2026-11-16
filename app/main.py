@@ -135,7 +135,7 @@ def _get_application() -> FastAPI:
     app.include_router(router=router)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(HTTPException, http_exception_handler)  # ty: ignore[invalid-argument-type]
-    app.add_exception_handler(Exception, unhandled_exception_handler)  # ty: ignore[invalid-argument-type]
+    app.add_exception_handler(Exception, unhandled_exception_handler)
     configure_openapi(app)
     return app
 
