@@ -34,11 +34,16 @@ async def test_unhandled_exception_returns_problem_json_and_is_logged(
         "get_user",
         side_effect=RuntimeError("Unexpected error"),
     )
+    handlers_logger = logging.getLogger("app.api.handlers")
+    handlers_logger.addHandler(caplog.handler)
 
-    with caplog.at_level(logging.ERROR):
-        response = await test_client_with_raised_app_exceptions.get(
-            f"/api/v1/users/{user_id}"
-        )
+    try:
+        with caplog.at_level(logging.ERROR, logger="app.api.handlers"):
+            response = await test_client_with_raised_app_exceptions.get(
+                f"/api/v1/users/{user_id}"
+            )
+    finally:
+        handlers_logger.removeHandler(caplog.handler)
 
     assert response.status_code == 500
     assert response.json() == {
