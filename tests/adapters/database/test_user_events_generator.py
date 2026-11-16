@@ -20,15 +20,11 @@ class _FakeAsyncpgConnection:
         self.listener_removed = False
         self.registered = asyncio.Event()
 
-    async def add_listener(
-        self, _channel: str, callback: UserEventCallback
-    ) -> None:
+    async def add_listener(self, *args: Any, callback: UserEventCallback) -> None:
         self.callback = callback
         self.registered.set()
 
-    async def remove_listener(
-        self, _channel: str, _callback: UserEventCallback
-    ) -> None:
+    async def remove_listener(self, *args: Any, **kwargs: Any) -> None:
         self.listener_removed = True
 
 
