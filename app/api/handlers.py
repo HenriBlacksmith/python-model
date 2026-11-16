@@ -31,7 +31,10 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Respon
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
     logger.error(
-        "Unhandled exception on %s %s", request.method, request.url.path, exc_info=exc
+        "Unhandled exception on %s %s",
+        request.method,
+        request.url.path,
+        exc_info=exc,
     )
     return ProblemJSONResponse(
         status_code=500,
