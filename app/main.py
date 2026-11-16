@@ -18,7 +18,11 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.adapters.configuration.settings import settings
-from app.api.handlers import http_exception_handler, validation_exception_handler
+from app.api.handlers import (
+    http_exception_handler,
+    unhandled_exception_handler,
+    validation_exception_handler,
+)
 from app.api.routes.router import router
 from app.core.constants import constants
 
@@ -131,6 +135,7 @@ def _get_application() -> FastAPI:
     app.include_router(router=router)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(HTTPException, http_exception_handler)  # ty: ignore[invalid-argument-type]
+    app.add_exception_handler(Exception, unhandled_exception_handler)
     configure_openapi(app)
     return app
 

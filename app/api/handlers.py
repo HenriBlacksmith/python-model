@@ -1,3 +1,5 @@
+import logging
+
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 lazy from fastapi import HTTPException, Request, Response
@@ -10,6 +12,8 @@ from app.api.models.errors import (
     ProblemJSONResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> Response:
     return ProblemJSONResponse(
@@ -18,6 +22,26 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Respon
             APIErrorResponse(
                 title=exc.detail,
                 status=exc.status_code,
+                instance=request.url.path,
+            ),
+            exclude_none=True,
+        ),
+    )
+
+
+async def unhandled_exception_handler(request: Request, exc: Exception) -> Response:
+    logger.error(
+        "Unhandled exception on %s %s",
+        request.method,
+        request.url.path,
+        exc_info=exc,
+    )
+    return ProblemJSONResponse(
+        status_code=500,
+        content=jsonable_encoder(
+            APIErrorResponse(
+                title="An unexpected error occurred.",
+                status=500,
                 instance=request.url.path,
             ),
             exclude_none=True,
