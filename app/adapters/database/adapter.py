@@ -49,6 +49,7 @@ class DatastoreAdapter(DatastorePort):
         try:
             await self._session.commit()
         except IntegrityError as err:
+            await self._session.rollback()
             raise UsernameAlreadyInUseError from err
         await self._session.refresh(user)
         return user.to_core_model()
@@ -78,7 +79,11 @@ class DatastoreAdapter(DatastorePort):
         if user is None:
             raise UserNotFoundError
         user.name = user_request.name
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except IntegrityError as err:
+            await self._session.rollback()
+            raise UsernameAlreadyInUseError from err
         await self._session.refresh(user)
         return user.to_core_model()
 
