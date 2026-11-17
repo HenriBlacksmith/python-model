@@ -7,9 +7,13 @@ from app.adapters.database.models import User
 
 
 async def test_successful_user_retrieval(
-    test_client: AsyncClient, test_user: User
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    test_user: User,
 ) -> None:
-    response = await test_client.get(f"/api/v1/users/{test_user.id}")
+    response = await test_client.get(
+        f"/api/v1/users/{test_user.id}", headers=auth_headers
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -21,9 +25,13 @@ async def test_successful_user_retrieval(
     assert response.headers["content-type"] == "application/json"
 
 
-async def test_retrieval_of_non_existent_user(test_client: AsyncClient) -> None:
+async def test_retrieval_of_non_existent_user(
+    test_client: AsyncClient, auth_headers: dict[str, str]
+) -> None:
     random_id = uuid4()
-    response = await test_client.get(f"/api/v1/users/{random_id}")
+    response = await test_client.get(
+        f"/api/v1/users/{random_id}", headers=auth_headers
+    )
 
     assert response.status_code == 404
     assert response.json() == {

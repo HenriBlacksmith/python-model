@@ -1,11 +1,16 @@
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
 from uuid import uuid4
 lazy from collections.abc import AsyncGenerator, Callable, Coroutine
 
+import jwt
 import pytest
 from alembic import command
 from alembic.config import Config
 from asgi_lifespan import LifespanManager
+from cryptography.hazmat.primitives.asymmetric import rsa
 from fastmcp.utilities.asgi_transport import StreamingASGITransport
 from httpx2 import ASGITransport, AsyncClient
 from sqlalchemy import delete
@@ -15,8 +20,10 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+lazy from pytest_mock import MockerFixture
 
-from app.adapters.configuration.settings import AppSettings
+from app.adapters.configuration.settings import AppSettings, settings
+from app.api.dependencies.auth import jwks_client
 from app.main import app
 lazy from app.adapters.database.models import User
 
@@ -114,3 +121,47 @@ async def create_test_users(
         return users
 
     return _create_users
+
+
+@pytest.fixture(scope="session")
+def rsa_private_key() -> rsa.RSAPrivateKey:
+    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
+
+
+@pytest.fixture(autouse=True)
+def mock_jwks_client(
+    rsa_private_key: rsa.RSAPrivateKey, mocker: MockerFixture
+) -> None:
+    signing_key = SimpleNamespace(key=rsa_private_key.public_key())
+    mocker.patch.object(
+        jwks_client,
+        "get_signing_key_from_jwt",
+        return_value=signing_key,
+    )
+
+
+@pytest.fixture
+def make_token(rsa_private_key: rsa.RSAPrivateKey) -> Callable[..., str]:
+    def _make_token(
+        scopes: list[str] | None = None,
+        expires_at: datetime | None = None,
+    ) -> str:
+        now = datetime.now(tz=UTC)
+        claims: dict[str, Any] = {
+            "sub": "test-subject",
+            "scp": scopes if scopes is not None else ["users:read", "users:write"],
+            "iss": str(settings.auth.issuer),
+            "iat": now,
+            "exp": (
+                expires_at if expires_at is not None else now + timedelta(minutes=5)
+            ),
+        }
+        return jwt.encode(claims, rsa_private_key, algorithm="RS256")
+
+    return _make_token
+
+
+@pytest.fixture
+def auth_headers(make_token: Callable[..., str]) -> dict[str, str]:
+    token = make_token()
+    return {"Authorization": f"Bearer {token}"}
