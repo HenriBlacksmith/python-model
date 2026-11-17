@@ -26,7 +26,7 @@ def _get_token(token: Annotated[str | None, Depends(oauth2_scheme)]) -> str:
 
 
 def get_current_user(
-    security_scopes: Annotated[SecurityScopes, Depends()],
+    security_scopes: SecurityScopes,
     token: Annotated[str, Depends(_get_token)],
 ) -> dict[str, Any]:
     try:
