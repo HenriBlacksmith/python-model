@@ -6,19 +6,27 @@ from app.adapters.database.models import User
 
 
 async def test_successful_user_deletion(
-    test_client: AsyncClient, test_user: User
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    test_user: User,
 ) -> None:
-    response = await test_client.delete(f"/api/v1/users/{test_user.id}")
+    response = await test_client.delete(
+        f"/api/v1/users/{test_user.id}", headers=auth_headers
+    )
 
     assert response.status_code == 204
     assert response.content == b""
     assert "content-type" not in response.headers
 
 
-async def test_deletion_of_non_existing_user(test_client: AsyncClient) -> None:
+async def test_deletion_of_non_existing_user(
+    test_client: AsyncClient, auth_headers: dict[str, str]
+) -> None:
     non_existent_user_id = uuid4()
 
-    response = await test_client.delete(f"/api/v1/users/{non_existent_user_id}")
+    response = await test_client.delete(
+        f"/api/v1/users/{non_existent_user_id}", headers=auth_headers
+    )
 
     assert response.status_code == 404
     assert response.json() == {

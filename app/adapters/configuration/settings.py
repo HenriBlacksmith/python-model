@@ -1,5 +1,5 @@
 import os
-from typing import Annotated
+from typing import Annotated, Literal
 
 from annotated_types import Gt
 from pydantic import HttpUrl
@@ -18,6 +18,12 @@ class APISettings(BaseSettings):
     default_page_size: Annotated[int, Gt(gt=0)]
 
 
+class AuthenticationSettings(BaseSettings):
+    issuer: HttpUrl
+    jwks_url: HttpUrl
+    scope_claim: Literal["scp", "scope"] = "scp"
+
+
 class DatabaseSettings(BaseSettings):
     url: PostgresDsn
     pool_size: int = 10
@@ -26,6 +32,7 @@ class DatabaseSettings(BaseSettings):
 
 class AppSettings(BaseSettings):
     api: Annotated[APISettings, Field(alias="api")]
+    auth: Annotated[AuthenticationSettings, Field(alias="auth")]
     database: Annotated[DatabaseSettings, Field(alias="database")]
 
     @classmethod

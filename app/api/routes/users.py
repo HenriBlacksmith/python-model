@@ -1,7 +1,7 @@
 from typing import Annotated
 lazy from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, HTTPException, Query, Response, Security, status
 
 from app.api import Tags
 from app.api.models.errors import (
@@ -15,31 +15,75 @@ from app.api.models.pagination import (
 )
 from app.api.models.users import UserRequest, UserResponse
 from app.core.errors import UsernameAlreadyInUseError, UserNotFoundError
+lazy from app.api.dependencies.auth import get_current_user
 lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter(tags=[Tags.Users])
 
+_VALIDATION_ERROR_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIValidationErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "The request was invalid.",
+}
+
+_NOT_FOUND_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "User not found.",
+}
+
+_CONFLICT_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "The requested username is already in use.",
+}
+
+_UNHANDLED_ERROR_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIUnhandledErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "An unexpected error occurred.",
+}
+
+_UNAUTHORIZED_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "Missing or invalid authentication token.",
+}
+
+_FORBIDDEN_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "The access token does not have the required scopes.",
+}
+
 
 @router.post(
     "/users",
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     status_code=status.HTTP_201_CREATED,
     responses={
-        400: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIValidationErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "The request was invalid.",
-        },
-        500: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIUnhandledErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "An unexpected error occurred.",
-        },
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
+        400: _VALIDATION_ERROR_RESPONSE,
+        500: _UNHANDLED_ERROR_RESPONSE,
     },
 )
 async def create_user(
@@ -57,31 +101,13 @@ async def create_user(
 
 @router.get(
     "/users/{user_id}",
+    dependencies=[Security(get_current_user, scopes=["users:read"])],
     responses={
-        404: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "User not found.",
-        },
-        409: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "The requested username is already in use.",
-        },
-        500: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIUnhandledErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "An unexpected error occurred.",
-        },
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
+        404: _NOT_FOUND_RESPONSE,
+        409: _CONFLICT_RESPONSE,
+        500: _UNHANDLED_ERROR_RESPONSE,
     },
 )
 async def get_user(
@@ -99,15 +125,11 @@ async def get_user(
 
 @router.get(
     "/users",
+    dependencies=[Security(get_current_user, scopes=["users:read"])],
     responses={
-        500: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIUnhandledErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "An unexpected error occurred.",
-        },
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
+        500: _UNHANDLED_ERROR_RESPONSE,
     },
 )
 async def list_users(
@@ -128,31 +150,13 @@ async def list_users(
 
 @router.put(
     "/users/{user_id}",
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     responses={
-        404: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "User not found.",
-        },
-        409: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "The requested username is already in use.",
-        },
-        500: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIUnhandledErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "An unexpected error occurred.",
-        },
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
+        404: _NOT_FOUND_RESPONSE,
+        409: _CONFLICT_RESPONSE,
+        500: _UNHANDLED_ERROR_RESPONSE,
     },
 )
 async def update_user(
@@ -172,25 +176,14 @@ async def update_user(
 
 @router.delete(
     "/users/{user_id}",
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
-        404: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "User not found.",
-        },
-        500: {
-            "content": {
-                "application/problem+json": {
-                    "schema": APIUnhandledErrorResponse.model_json_schema(),
-                },
-            },
-            "description": "An unexpected error occurred.",
-        },
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
+        404: _NOT_FOUND_RESPONSE,
+        500: _UNHANDLED_ERROR_RESPONSE,
     },
 )
 async def delete_user(users_controller: UsersControllerDepends, user_id: UUID) -> None:

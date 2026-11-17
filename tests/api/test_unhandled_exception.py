@@ -24,6 +24,7 @@ async def test_client_with_raised_app_exceptions() -> AsyncGenerator[AsyncClient
 
 async def test_unhandled_exception_returns_problem_json_and_is_logged(
     test_client_with_raised_app_exceptions: AsyncClient,
+    auth_headers: dict[str, str],
     mocker: MockerFixture,
 ) -> None:
     user_id = uuid4()
@@ -32,7 +33,7 @@ async def test_unhandled_exception_returns_problem_json_and_is_logged(
     mocker.patch.object(UsersController, "get_user", side_effect=error)
 
     response = await test_client_with_raised_app_exceptions.get(
-        f"/api/v1/users/{user_id}"
+        f"/api/v1/users/{user_id}", headers=auth_headers
     )
 
     assert response.status_code == 500

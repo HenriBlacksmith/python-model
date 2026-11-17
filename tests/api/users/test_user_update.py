@@ -9,10 +9,13 @@ from app.adapters.database.models import User
 
 
 async def test_successful_user_update(
-    test_client: AsyncClient, test_user: User
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    test_user: User,
 ) -> None:
     response = await test_client.put(
         f"/api/v1/users/{test_user.id}",
+        headers=auth_headers,
         json={
             "username": "updateduser",
         },
@@ -30,12 +33,14 @@ async def test_successful_user_update(
 
 async def test_user_update_with_conflicting_username(
     test_client: AsyncClient,
+    auth_headers: dict[str, str],
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
 ) -> None:
     users = await create_test_users(["testuser", "otheruser"])
 
     response = await test_client.put(
         f"/api/v1/users/{users[1].id}",
+        headers=auth_headers,
         json={
             "username": "testuser",
         },
@@ -62,12 +67,14 @@ async def test_user_update_with_conflicting_username(
 )
 async def test_user_update_with_invalid_username(
     test_client: AsyncClient,
+    auth_headers: dict[str, str],
     test_user: User,
     invalid_username: str,
     expected_error_detail: str,
 ) -> None:
     response = await test_client.put(
         f"/api/v1/users/{test_user.id}",
+        headers=auth_headers,
         json={
             "username": invalid_username,
         },
@@ -89,11 +96,14 @@ async def test_user_update_with_invalid_username(
     assert response.headers["content-type"] == "application/problem+json"
 
 
-async def test_update_of_non_existing_user(test_client: AsyncClient) -> None:
+async def test_update_of_non_existing_user(
+    test_client: AsyncClient, auth_headers: dict[str, str]
+) -> None:
     non_existent_user_id = uuid4()
 
     response = await test_client.put(
         f"/api/v1/users/{non_existent_user_id}",
+        headers=auth_headers,
         json={
             "username": "updateduser",
         },

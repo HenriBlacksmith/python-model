@@ -4,9 +4,12 @@ import pytest
 lazy from httpx2 import AsyncClient
 
 
-async def test_successful_user_creation(test_client: AsyncClient) -> None:
+async def test_successful_user_creation(
+    test_client: AsyncClient, auth_headers: dict[str, str]
+) -> None:
     response = await test_client.post(
         "/api/v1/users",
+        headers=auth_headers,
         json={
             "username": "testuser",
         },
@@ -32,10 +35,14 @@ async def test_successful_user_creation(test_client: AsyncClient) -> None:
     ],
 )
 async def test_user_creation_with_invalid_username(
-    test_client: AsyncClient, invalid_username: str, expected_error_detail: str
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    invalid_username: str,
+    expected_error_detail: str,
 ) -> None:
     response = await test_client.post(
         "/api/v1/users",
+        headers=auth_headers,
         json={
             "username": invalid_username,
         },
@@ -60,9 +67,11 @@ async def test_user_creation_with_invalid_username(
 @pytest.mark.usefixtures("test_user")
 async def test_user_creation_with_conflicting_username(
     test_client: AsyncClient,
+    auth_headers: dict[str, str],
 ) -> None:
     response = await test_client.post(
         "/api/v1/users",
+        headers=auth_headers,
         json={
             "username": "testuser",
         },

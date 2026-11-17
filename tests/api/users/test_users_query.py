@@ -15,9 +15,11 @@ lazy from app.adapters.database.models import User
     ],
 )
 async def test_successful_user_list_no_user(
-    test_client: AsyncClient, query: str
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    query: str,
 ) -> None:
-    response = await test_client.get(f"/api/v1/users?{query}")
+    response = await test_client.get(f"/api/v1/users?{query}", headers=auth_headers)
 
     assert response.status_code == 200
     assert response.json() == {
@@ -45,12 +47,13 @@ async def test_successful_user_list_no_user(
 )
 async def test_successful_user_list_multiple_users_one_page(
     test_client: AsyncClient,
+    auth_headers: dict[str, str],
     query: str,
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
 ) -> None:
     await create_test_users(["amy", "bob", "carl", "dave", "eddie", "fiona", "gayle"])
 
-    response = await test_client.get(f"/api/v1/users?{query}")
+    response = await test_client.get(f"/api/v1/users?{query}", headers=auth_headers)
 
     assert response.status_code == 200
     assert response.json() == {
@@ -114,11 +117,14 @@ async def test_successful_user_list_multiple_users_one_page(
 
 async def test_successful_user_list_multiple_users_two_pages(
     test_client: AsyncClient,
+    auth_headers: dict[str, str],
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
 ) -> None:
     await create_test_users(["amy", "bob", "carl", "dave", "eddie", "fiona", "gayle"])
 
-    response = await test_client.get("/api/v1/users?page=1&page_size=5")
+    response = await test_client.get(
+        "/api/v1/users?page=1&page_size=5", headers=auth_headers
+    )
 
     assert response.status_code == 200
     assert response.json() == {
@@ -167,7 +173,9 @@ async def test_successful_user_list_multiple_users_two_pages(
     }
     assert response.headers["content-type"] == "application/json"
 
-    response = await test_client.get("/api/v1/users?page=2&page_size=5")
+    response = await test_client.get(
+        "/api/v1/users?page=2&page_size=5", headers=auth_headers
+    )
 
     assert response.status_code == 200
     assert response.json() == {
