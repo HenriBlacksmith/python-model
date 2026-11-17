@@ -1,8 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
-lazy from collections.abc import Callable
-
 import pytest
 lazy from httpx2 import AsyncClient
 
