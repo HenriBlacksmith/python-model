@@ -1,10 +1,10 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
-import pytest
-lazy from httpx2 import AsyncClient
 
-from conftest import TokenFactory
+import pytest
+lazy from conftest import TokenFactory
+lazy from httpx2 import AsyncClient
 
 READ_SCOPE = "users:read"
 WRITE_SCOPE = "users:write"

@@ -29,9 +29,7 @@ async def test_retrieval_of_non_existent_user(
     test_client: AsyncClient, auth_headers: dict[str, str]
 ) -> None:
     random_id = uuid4()
-    response = await test_client.get(
-        f"/api/v1/users/{random_id}", headers=auth_headers
-    )
+    response = await test_client.get(f"/api/v1/users/{random_id}", headers=auth_headers)
 
     assert response.status_code == 404
     assert response.json() == {

@@ -36,7 +36,6 @@ class TokenFactory(Protocol):
     ) -> str: ...
 
 
-
 @pytest.fixture(scope="session")
 def release_id() -> str:
     with open("VERSION") as f:
@@ -138,9 +137,7 @@ def rsa_private_key() -> rsa.RSAPrivateKey:
 
 
 @pytest.fixture(autouse=True)
-def mock_jwks_client(
-    rsa_private_key: rsa.RSAPrivateKey, mocker: MockerFixture
-) -> None:
+def mock_jwks_client(rsa_private_key: rsa.RSAPrivateKey, mocker: MockerFixture) -> None:
     signing_key = SimpleNamespace(key=rsa_private_key.public_key())
     mocker.patch.object(
         jwks_client,
