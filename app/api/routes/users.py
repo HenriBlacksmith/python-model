@@ -20,12 +20,32 @@ lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter(tags=[Tags.Users])
 
+_UNAUTHORIZED_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "Missing or invalid authentication token.",
+}
+
+_FORBIDDEN_RESPONSE = {
+    "content": {
+        "application/problem+json": {
+            "schema": APIErrorResponse.model_json_schema(),
+        },
+    },
+    "description": "The access token does not have the required scopes.",
+}
+
 
 @router.post(
     "/users",
     dependencies=[Depends(require_scopes("users:write"))],
     status_code=status.HTTP_201_CREATED,
     responses={
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
         400: {
             "content": {
                 "application/problem+json": {
@@ -61,6 +81,8 @@ async def create_user(
     "/users/{user_id}",
     dependencies=[Depends(require_scopes("users:read"))],
     responses={
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
         404: {
             "content": {
                 "application/problem+json": {
@@ -104,6 +126,8 @@ async def get_user(
     "/users",
     dependencies=[Depends(require_scopes("users:read"))],
     responses={
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
         500: {
             "content": {
                 "application/problem+json": {
@@ -134,6 +158,8 @@ async def list_users(
     "/users/{user_id}",
     dependencies=[Depends(require_scopes("users:write"))],
     responses={
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
         404: {
             "content": {
                 "application/problem+json": {
@@ -181,6 +207,8 @@ async def update_user(
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
+        401: _UNAUTHORIZED_RESPONSE,
+        403: _FORBIDDEN_RESPONSE,
         404: {
             "content": {
                 "application/problem+json": {
