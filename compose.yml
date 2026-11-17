@@ -17,5 +17,38 @@ services:
       timeout: 5s
       retries: 5
 
+  hydra-migrate:
+    image: oryd/hydra:v2.2.0
+    command: migrate sql -e --yes
+    environment:
+      - DSN=postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable&max_conns=20
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  hydra:
+    image: oryd/hydra:v2.2.0
+    command: serve all --dev
+    restart: always
+    environment:
+      - DSN=postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable&max_conns=20
+      - SECRETS_SYSTEM=change-me-this-is-not-secure
+      - URLS_SELF_ISSUER=http://127.0.0.1:4444/
+      - URLS_LOGIN=http://127.0.0.1:3000/login
+      - URLS_CONSENT=http://127.0.0.1:3000/consent
+    ports:
+      - '4444:4444'
+      - '4445:4445'
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:4444/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hydra-migrate:
+        condition: service_completed_successfully
+
 volumes:
   postgres_data:

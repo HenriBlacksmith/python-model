@@ -18,6 +18,11 @@ class APISettings(BaseSettings):
     default_page_size: Annotated[int, Gt(gt=0)]
 
 
+class AuthenticationSettings(BaseSettings):
+    issuer: HttpUrl
+    jwks_url: HttpUrl
+
+
 class DatabaseSettings(BaseSettings):
     url: PostgresDsn
     pool_size: int = 10
@@ -26,6 +31,7 @@ class DatabaseSettings(BaseSettings):
 
 class AppSettings(BaseSettings):
     api: Annotated[APISettings, Field(alias="api")]
+    auth: Annotated[AuthenticationSettings, Field(alias="auth")]
     database: Annotated[DatabaseSettings, Field(alias="database")]
 
     @classmethod
