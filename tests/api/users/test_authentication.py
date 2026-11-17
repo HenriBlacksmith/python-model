@@ -6,6 +6,8 @@ lazy from collections.abc import Callable
 import pytest
 lazy from httpx2 import AsyncClient
 
+from conftest import TokenFactory
+
 READ_SCOPE = "users:read"
 WRITE_SCOPE = "users:write"
 
@@ -77,7 +79,7 @@ async def test_malformed_token_returns_401(
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
 async def test_expired_token_returns_401(
     test_client: AsyncClient,
-    make_token: Callable[..., str],
+    make_token: TokenFactory,
     method: str,
     url: str,
     has_body: bool,
@@ -105,7 +107,7 @@ async def test_expired_token_returns_401(
 )
 async def test_insufficient_scopes_return_403(
     test_client: AsyncClient,
-    make_token: Callable[..., str],
+    make_token: TokenFactory,
     method: str,
     url: str,
     has_body: bool,
@@ -130,7 +132,7 @@ async def test_insufficient_scopes_return_403(
 
 
 async def test_valid_token_grants_access(
-    test_client: AsyncClient, make_token: Callable[..., str]
+    test_client: AsyncClient, make_token: TokenFactory
 ) -> None:
     headers = {"Authorization": f"Bearer {make_token()}"}
     response = await test_client.post(

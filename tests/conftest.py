@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, Protocol
 from uuid import uuid4
 lazy from collections.abc import AsyncGenerator, Callable, Coroutine
 
@@ -26,6 +26,15 @@ from app.adapters.configuration.settings import AppSettings, settings
 from app.api.dependencies.auth import jwks_client
 from app.main import app
 lazy from app.adapters.database.models import User
+
+
+class TokenFactory(Protocol):
+    def __call__(
+        self,
+        scopes: list[str] | None = None,
+        expires_at: datetime | None = None,
+    ) -> str: ...
+
 
 
 @pytest.fixture(scope="session")
@@ -141,7 +150,7 @@ def mock_jwks_client(
 
 
 @pytest.fixture
-def make_token(rsa_private_key: rsa.RSAPrivateKey) -> Callable[..., str]:
+def make_token(rsa_private_key: rsa.RSAPrivateKey) -> TokenFactory:
     def _make_token(
         scopes: list[str] | None = None,
         expires_at: datetime | None = None,
@@ -162,6 +171,6 @@ def make_token(rsa_private_key: rsa.RSAPrivateKey) -> Callable[..., str]:
 
 
 @pytest.fixture
-def auth_headers(make_token: Callable[..., str]) -> dict[str, str]:
+def auth_headers(make_token: TokenFactory) -> dict[str, str]:
     token = make_token()
     return {"Authorization": f"Bearer {token}"}
