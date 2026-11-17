@@ -27,6 +27,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> Respon
             ),
             exclude_none=True,
         ),
+        headers=exc.headers,
     )
 
 
