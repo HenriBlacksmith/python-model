@@ -48,7 +48,7 @@ def get_current_user(
 
 
 def _granted_scopes(claims: dict[str, Any]) -> set[str]:
-    granted = claims.get("scp") or claims.get("scope") or []
+    granted = claims.get(settings.auth.scope_claim) or []
     if isinstance(granted, str):
         return set(granted.split())
     return set(granted)

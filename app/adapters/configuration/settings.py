@@ -1,5 +1,4 @@
 import os
-from typing import Annotated
 
 from annotated_types import Gt
 from pydantic import HttpUrl
@@ -21,6 +20,7 @@ class APISettings(BaseSettings):
 class AuthenticationSettings(BaseSettings):
     issuer: HttpUrl
     jwks_url: HttpUrl
+    scope_claim: Literal["scp", "scope"] = "scp"
 
 
 class DatabaseSettings(BaseSettings):
