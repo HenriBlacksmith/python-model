@@ -1,7 +1,7 @@
 from typing import Annotated
 lazy from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, HTTPException, Query, Response, Security, status
 
 from app.api import Tags
 from app.api.models.errors import (
@@ -15,7 +15,7 @@ from app.api.models.pagination import (
 )
 from app.api.models.users import UserRequest, UserResponse
 from app.core.errors import UsernameAlreadyInUseError, UserNotFoundError
-lazy from app.api.dependencies.auth import require_scopes
+lazy from app.api.dependencies.auth import get_current_user
 lazy from app.api.dependencies.controllers import UsersControllerDepends
 
 router = APIRouter(tags=[Tags.Users])
@@ -77,7 +77,7 @@ _FORBIDDEN_RESPONSE = {
 
 @router.post(
     "/users",
-    dependencies=[Depends(require_scopes("users:write"))],
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     status_code=status.HTTP_201_CREATED,
     responses={
         401: _UNAUTHORIZED_RESPONSE,
@@ -101,7 +101,7 @@ async def create_user(
 
 @router.get(
     "/users/{user_id}",
-    dependencies=[Depends(require_scopes("users:read"))],
+    dependencies=[Security(get_current_user, scopes=["users:read"])],
     responses={
         401: _UNAUTHORIZED_RESPONSE,
         403: _FORBIDDEN_RESPONSE,
@@ -125,7 +125,7 @@ async def get_user(
 
 @router.get(
     "/users",
-    dependencies=[Depends(require_scopes("users:read"))],
+    dependencies=[Security(get_current_user, scopes=["users:read"])],
     responses={
         401: _UNAUTHORIZED_RESPONSE,
         403: _FORBIDDEN_RESPONSE,
@@ -150,7 +150,7 @@ async def list_users(
 
 @router.put(
     "/users/{user_id}",
-    dependencies=[Depends(require_scopes("users:write"))],
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     responses={
         401: _UNAUTHORIZED_RESPONSE,
         403: _FORBIDDEN_RESPONSE,
@@ -176,7 +176,7 @@ async def update_user(
 
 @router.delete(
     "/users/{user_id}",
-    dependencies=[Depends(require_scopes("users:write"))],
+    dependencies=[Security(get_current_user, scopes=["users:write"])],
     status_code=status.HTTP_204_NO_CONTENT,
     response_class=Response,
     responses={
