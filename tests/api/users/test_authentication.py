@@ -3,8 +3,9 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-lazy from conftest import TokenFactory
 lazy from httpx2 import AsyncClient
+
+lazy from tests.conftest import TokenFactory
 
 READ_SCOPE = "users:read"
 WRITE_SCOPE = "users:write"
