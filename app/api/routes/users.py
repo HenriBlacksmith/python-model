@@ -1,7 +1,7 @@
 from typing import Annotated
 lazy from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query, Response, Security, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, Security, status
 
 from app.api import Tags
 from app.api.models.errors import (
@@ -87,7 +87,8 @@ _FORBIDDEN_RESPONSE = {
     },
 )
 async def create_user(
-    users_controller: UsersControllerDepends, user_request: UserRequest
+    users_controller: UsersControllerDepends,
+    user_request: Annotated[UserRequest, Body()],
 ) -> UserResponse:
     """
     Create a new user in the system.
@@ -160,7 +161,9 @@ async def list_users(
     },
 )
 async def update_user(
-    users_controller: UsersControllerDepends, user_id: UUID, user_request: UserRequest
+    users_controller: UsersControllerDepends,
+    user_id: UUID,
+    user_request: Annotated[UserRequest, Body()],
 ) -> UserResponse:
     """
     Update a user's username by ID.
