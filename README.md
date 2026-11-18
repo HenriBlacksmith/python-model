@@ -54,7 +54,6 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 - Add request validation tests with hypothesis
 - Enforce hexagonal architecture with strict import patterns using Ruff ICN rules
 - Inject the authenticated user claims (CurrentUser) into the controllers
-- Validate the access token audience (aud)
 - Bootstrap an Ory Hydra OAuth client in the compose setup
 - Authenticate the SSE /user_events endpoint
 - Study JWKS rotation and key cache refresh
@@ -69,6 +68,7 @@ https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#usin
 
 ## Done
 
+- Validate the access token audience (auth.audience, optional)
 - Add a paginated GET /users endpoint
 - Add an asynchronous database health check
 - Cleaned default FastAPI 422 codes from the OpenAPI docs
