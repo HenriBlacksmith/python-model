@@ -22,6 +22,7 @@ class AuthenticationSettings(BaseSettings):
     issuer: HttpUrl
     jwks_url: HttpUrl
     scope_claim: Literal["scp", "scope"] = "scp"
+    audience: str | None = None
 
 
 class DatabaseSettings(BaseSettings):

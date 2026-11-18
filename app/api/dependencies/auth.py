@@ -36,6 +36,7 @@ def get_current_user(
             key=signing_key.key,
             algorithms=["RS256"],
             issuer=str(settings.auth.issuer),
+            audience=settings.auth.audience,
         )
     except (jwt.InvalidTokenError, jwt.PyJWKClientError) as err:
         raise HTTPException(

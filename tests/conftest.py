@@ -33,6 +33,7 @@ class TokenFactory(Protocol):
         self,
         scopes: list[str] | None = None,
         expires_at: datetime | None = None,
+        audience: str | None = None,
     ) -> str: ...
 
 
@@ -151,12 +152,14 @@ def make_token(rsa_private_key: rsa.RSAPrivateKey) -> TokenFactory:
     def _make_token(
         scopes: list[str] | None = None,
         expires_at: datetime | None = None,
+        audience: str | None = None,
     ) -> str:
         now = datetime.now(tz=UTC)
         claims: dict[str, Any] = {
             "sub": "test-subject",
             "scp": scopes if scopes is not None else ["users:read", "users:write"],
             "iss": str(settings.auth.issuer),
+            "aud": audience if audience is not None else settings.auth.audience,
             "iat": now,
             "exp": (
                 expires_at if expires_at is not None else now + timedelta(minutes=5)

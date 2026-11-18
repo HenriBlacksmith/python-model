@@ -130,6 +130,32 @@ async def test_insufficient_scopes_return_403(
     assert response.headers["content-type"] == "application/problem+json"
 
 
+@pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
+async def test_wrong_audience_returns_401(
+    test_client: AsyncClient,
+    make_token: TokenFactory,
+    method: str,
+    url: str,
+    has_body: bool,
+) -> None:
+    token = make_token(audience="other-client")
+    response = await getattr(test_client, method)(
+        url,
+        headers={"Authorization": f"Bearer {token}"},
+        **_request_kwargs(has_body),
+    )
+
+    assert response.status_code == 401
+    assert response.headers["www-authenticate"] == "Bearer"
+    assert response.json() == {
+        "type": "about:blank",
+        "status": 401,
+        "title": "Invalid authentication token.",
+        "instance": url,
+    }
+    assert response.headers["content-type"] == "application/problem+json"
+
+
 async def test_valid_token_grants_access(
     test_client: AsyncClient, make_token: TokenFactory
 ) -> None:
