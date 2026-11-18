@@ -30,9 +30,7 @@ class CorrelationIdMiddleware:
 
         async def send_with_correlation_id(message: Message) -> None:
             if message["type"] == "http.response.start":
-                MutableHeaders(scope=message).append(
-                    CORRELATION_ID_HEADER, value
-                )
+                MutableHeaders(scope=message).append(CORRELATION_ID_HEADER, value)
             await send(message)
 
         try:
