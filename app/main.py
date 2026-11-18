@@ -23,6 +23,7 @@ from app.api.handlers import (
     unhandled_exception_handler,
     validation_exception_handler,
 )
+from app.api.middlewares.correlation_id import CorrelationIdMiddleware
 from app.api.routes.router import router
 from app.core.constants import constants
 
@@ -133,6 +134,7 @@ def _get_application() -> FastAPI:
         ),
     )
     app.include_router(router=router)
+    app.add_middleware(CorrelationIdMiddleware)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(HTTPException, http_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(Exception, unhandled_exception_handler)
