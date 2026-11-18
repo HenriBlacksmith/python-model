@@ -1,8 +1,8 @@
 from contextvars import ContextVar
 from uuid import uuid4
+lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from starlette.datastructures import Headers, MutableHeaders
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 CORRELATION_ID_HEADER = "X-Correlation-ID"
 
