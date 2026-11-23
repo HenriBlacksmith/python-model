@@ -90,8 +90,8 @@ class HttpAuditLogMiddleware:
         client = scope.get("client")
         query: str = scope.get("query_string", b"").decode(errors="replace")
         forwarded_for: str = headers.get("x-forwarded-for", "")
-        client_ip: str | None = (
-            forwarded_for.split(",")[0].strip() or client[0] if client else None
+        client_ip: str | None = forwarded_for.split(",")[0].strip() or (
+            client[0] if client else None
         )
         details: dict[str, Any] = {
             "http_request_method": scope["method"],
