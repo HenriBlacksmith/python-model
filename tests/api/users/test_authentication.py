@@ -36,7 +36,7 @@ def _assert_audited(
 ) -> None:
     records = audit_records(method, url)
     assert len(records) == 1
-    assert records[0].http_response_status_code == expected_status  # type: ignore[attr-defined] # noqa: E501
+    assert records[0].http_response_status_code == expected_status  # type: ignore[attr-defined]
     assert records[0].client_address  # type: ignore[attr-defined]
 
 

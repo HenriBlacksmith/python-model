@@ -2,11 +2,10 @@ import contextlib
 import logging
 import time
 from typing import Any
-lazy from collections.abc import Awaitable, Callable
-lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 import jwt
 from starlette.datastructures import Headers
+lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.adapters.configuration.settings import settings
 from app.adapters.logging.audit import AUDIT_LOGGER_NAME
