@@ -6,6 +6,7 @@ lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from starlette.datastructures import Headers
 
+from app.adapters.configuration.settings import settings
 from app.adapters.logging.audit import AUDIT_LOGGER_NAME
 from app.api.middlewares.correlation_id import CORRELATION_ID_HEADER
 
@@ -13,13 +14,13 @@ audit_logger = logging.getLogger(name=AUDIT_LOGGER_NAME)
 
 
 class HttpAuditLogMiddleware:
-    """Emit one structured audit log record per HTTP request and response."""
+    """Emit one structured audit log record per audited HTTP request."""
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
+        if scope["type"] != "http" or not self._is_audited(path=scope["path"]):
             await self.app(scope=scope, receive=receive, send=send)
             return
 
@@ -48,6 +49,14 @@ class HttpAuditLogMiddleware:
                 error_type=error_type,
                 error_message=error_message,
             )
+
+    def _is_audited(self, path: str) -> bool:
+        audit = settings.audit
+        if not audit.enabled:
+            return False
+        return not any(
+            path.startswith(excluded) for excluded in audit.exclude_paths
+        )
 
     def _log_audit(
         self,
