@@ -33,7 +33,10 @@ async def test_client_with_failing_database(
     ],
 )
 async def test_liveness_check(
-    test_client: AsyncClient, release_id: str, query: str
+    test_client: AsyncClient,
+    release_id: str,
+    query: str,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.get(f"/api/v1/health{query}")
 
@@ -44,9 +47,15 @@ async def test_liveness_check(
         "releaseId": release_id,
     }
     assert response.headers["content-type"] == "application/health+json"
+    # The health endpoint is excluded from audit logging by configuration.
+    assert audit_records("GET", "/api/v1/health") == []
 
 
-async def test_readiness_check(test_client: AsyncClient, release_id: str) -> None:
+async def test_readiness_check(
+    test_client: AsyncClient,
+    release_id: str,
+    audit_records: AuditRecords,
+) -> None:
     response = await test_client.get("/api/v1/health?check_type=readiness")
 
     assert response.status_code == 200
@@ -62,10 +71,14 @@ async def test_readiness_check(test_client: AsyncClient, release_id: str) -> Non
         },
     }
     assert response.headers["content-type"] == "application/health+json"
+    # The health endpoint is excluded from audit logging by configuration.
+    assert audit_records("GET", "/api/v1/health") == []
 
 
 async def test_readiness_check_fails_when_db_fails(
-    test_client_with_failing_database: AsyncClient, release_id: str
+    test_client_with_failing_database: AsyncClient,
+    release_id: str,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client_with_failing_database.get(
         "/api/v1/health?check_type=readiness"
@@ -84,3 +97,5 @@ async def test_readiness_check_fails_when_db_fails(
         },
     }
     assert response.headers["content-type"] == "application/health+json"
+    # The health endpoint is excluded from audit logging by configuration.
+    assert audit_records("GET", "/api/v1/health") == []

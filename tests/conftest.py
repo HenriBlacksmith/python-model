@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,6 +24,7 @@ from sqlalchemy.ext.asyncio import (
 lazy from pytest_mock import MockerFixture
 
 from app.adapters.configuration.settings import AppSettings, settings
+from app.adapters.logging.audit import AUDIT_LOGGER_NAME
 from app.api.dependencies.auth import jwks_client
 from app.main import app
 lazy from app.adapters.database.models import User
@@ -35,6 +37,9 @@ class TokenFactory(Protocol):
         expires_at: datetime | None = None,
         audience: str | None = None,
     ) -> str: ...
+
+
+AuditRecords = Callable[[str, str], list[logging.LogRecord]]
 
 
 @pytest.fixture(scope="session")
@@ -168,6 +173,23 @@ def make_token(rsa_private_key: rsa.RSAPrivateKey) -> TokenFactory:
         return jwt.encode(claims, rsa_private_key, algorithm="RS256")
 
     return _make_token
+
+
+@pytest.fixture
+def audit_records(caplog: pytest.LogCaptureFixture) -> AuditRecords:
+    """Return the audit log records matching an HTTP method and path."""
+    caplog.set_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME)
+
+    def _find(method: str, path: str) -> list[logging.LogRecord]:
+        return [
+            record
+            for record in caplog.records
+            if record.name == AUDIT_LOGGER_NAME
+            and record.http_request_method == method  # type: ignore[attr-defined]
+            and record.url_path == path  # type: ignore[attr-defined]
+        ]
+
+    return _find
 
 
 @pytest.fixture

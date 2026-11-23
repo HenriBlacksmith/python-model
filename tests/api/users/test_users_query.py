@@ -5,6 +5,7 @@ import pytest
 lazy from httpx2 import AsyncClient
 
 lazy from app.adapters.database.models import User
+lazy from tests.conftest import AuditRecords
 
 
 @pytest.mark.parametrize(
@@ -18,6 +19,7 @@ async def test_successful_user_list_no_user(
     test_client: AsyncClient,
     auth_headers: dict[str, str],
     query: str,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.get(f"/api/v1/users?{query}", headers=auth_headers)
 
@@ -36,6 +38,9 @@ async def test_successful_user_list_no_user(
         },
     }
     assert response.headers["content-type"] == "application/json"
+    records = audit_records("GET", "/api/v1/users")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 200  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -50,6 +55,7 @@ async def test_successful_user_list_multiple_users_one_page(
     auth_headers: dict[str, str],
     query: str,
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
+    audit_records: AuditRecords,
 ) -> None:
     await create_test_users(["amy", "bob", "carl", "dave", "eddie", "fiona", "gayle"])
 
@@ -113,12 +119,16 @@ async def test_successful_user_list_multiple_users_one_page(
         },
     }
     assert response.headers["content-type"] == "application/json"
+    records = audit_records("GET", "/api/v1/users")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 200  # type: ignore[attr-defined]
 
 
 async def test_successful_user_list_multiple_users_two_pages(
     test_client: AsyncClient,
     auth_headers: dict[str, str],
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
+    audit_records: AuditRecords,
 ) -> None:
     await create_test_users(["amy", "bob", "carl", "dave", "eddie", "fiona", "gayle"])
 
@@ -205,3 +215,7 @@ async def test_successful_user_list_multiple_users_two_pages(
         },
     }
     assert response.headers["content-type"] == "application/json"
+    records = audit_records("GET", "/api/v1/users")
+    assert len(records) == 2
+    assert records[0].http_response_status_code == 200  # type: ignore[attr-defined]
+    assert records[1].http_response_status_code == 200  # type: ignore[attr-defined]

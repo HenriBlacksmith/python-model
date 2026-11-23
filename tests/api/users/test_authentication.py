@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 lazy from httpx2 import AsyncClient
 
-lazy from tests.conftest import TokenFactory
+lazy from tests.conftest import AuditRecords, TokenFactory
 
 READ_SCOPE = "users:read"
 WRITE_SCOPE = "users:write"
@@ -31,12 +31,21 @@ def _request_kwargs(has_body: bool) -> dict[str, Any]:
     return {"json": {"username": "authuser"}} if has_body else {}
 
 
+def _assert_audited(
+    audit_records: AuditRecords, method: str, url: str, expected_status: int
+) -> None:
+    records = audit_records(method, url)
+    assert len(records) == 1
+    assert records[0].http_response_status_code == expected_status  # type: ignore[attr-defined] # noqa: E501
+
+
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
 async def test_missing_token_returns_401(
     test_client: AsyncClient,
     method: str,
     url: str,
     has_body: bool,
+    audit_records: AuditRecords,
 ) -> None:
     response = await getattr(test_client, method)(url, **_request_kwargs(has_body))
 
@@ -49,6 +58,7 @@ async def test_missing_token_returns_401(
         "instance": url,
     }
     assert response.headers["content-type"] == "application/problem+json"
+    _assert_audited(audit_records, method, url, 401)
 
 
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
@@ -57,6 +67,7 @@ async def test_malformed_token_returns_401(
     method: str,
     url: str,
     has_body: bool,
+    audit_records: AuditRecords,
 ) -> None:
     response = await getattr(test_client, method)(
         url,
@@ -73,6 +84,7 @@ async def test_malformed_token_returns_401(
         "instance": url,
     }
     assert response.headers["content-type"] == "application/problem+json"
+    _assert_audited(audit_records, method, url, 401)
 
 
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
@@ -82,6 +94,7 @@ async def test_expired_token_returns_401(
     method: str,
     url: str,
     has_body: bool,
+    audit_records: AuditRecords,
 ) -> None:
     token = make_token(expires_at=datetime.now(tz=UTC) - timedelta(minutes=1))
     response = await getattr(test_client, method)(
@@ -99,6 +112,7 @@ async def test_expired_token_returns_401(
         "instance": url,
     }
     assert response.headers["content-type"] == "application/problem+json"
+    _assert_audited(audit_records, method, url, 401)
 
 
 @pytest.mark.parametrize(
@@ -111,6 +125,7 @@ async def test_insufficient_scopes_return_403(
     url: str,
     has_body: bool,
     required_scope: str,
+    audit_records: AuditRecords,
 ) -> None:
     other_scope = READ_SCOPE if required_scope == WRITE_SCOPE else WRITE_SCOPE
     headers = {"Authorization": f"Bearer {make_token(scopes=[other_scope])}"}
@@ -128,6 +143,7 @@ async def test_insufficient_scopes_return_403(
         "instance": url,
     }
     assert response.headers["content-type"] == "application/problem+json"
+    _assert_audited(audit_records, method, url, 403)
 
 
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
@@ -137,6 +153,7 @@ async def test_wrong_audience_returns_401(
     method: str,
     url: str,
     has_body: bool,
+    audit_records: AuditRecords,
 ) -> None:
     token = make_token(audience="other-client")
     response = await getattr(test_client, method)(
@@ -154,10 +171,13 @@ async def test_wrong_audience_returns_401(
         "instance": url,
     }
     assert response.headers["content-type"] == "application/problem+json"
+    _assert_audited(audit_records, method, url, 401)
 
 
 async def test_valid_token_grants_access(
-    test_client: AsyncClient, make_token: TokenFactory
+    test_client: AsyncClient,
+    make_token: TokenFactory,
+    audit_records: AuditRecords,
 ) -> None:
     headers = {"Authorization": f"Bearer {make_token()}"}
     response = await test_client.post(
@@ -169,3 +189,4 @@ async def test_valid_token_grants_access(
     )
 
     assert response.status_code == 201
+    _assert_audited(audit_records, "post", "/api/v1/users", 201)

@@ -3,9 +3,13 @@ from unittest.mock import ANY
 import pytest
 lazy from httpx2 import AsyncClient
 
+lazy from tests.conftest import AuditRecords
+
 
 async def test_successful_user_creation(
-    test_client: AsyncClient, auth_headers: dict[str, str]
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.post(
         "/api/v1/users",
@@ -23,6 +27,9 @@ async def test_successful_user_creation(
         "updatedAt": ANY,
     }
     assert response.headers["content-type"] == "application/json"
+    records = audit_records("POST", "/api/v1/users")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 201  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(
@@ -39,6 +46,7 @@ async def test_user_creation_with_invalid_username(
     auth_headers: dict[str, str],
     invalid_username: str,
     expected_error_detail: str,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.post(
         "/api/v1/users",
@@ -62,12 +70,16 @@ async def test_user_creation_with_invalid_username(
         ],
     }
     assert response.headers["content-type"] == "application/problem+json"
+    records = audit_records("POST", "/api/v1/users")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 400  # type: ignore[attr-defined]
 
 
 @pytest.mark.usefixtures("test_user")
 async def test_user_creation_with_conflicting_username(
     test_client: AsyncClient,
     auth_headers: dict[str, str],
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.post(
         "/api/v1/users",
@@ -85,3 +97,6 @@ async def test_user_creation_with_conflicting_username(
         "instance": "/api/v1/users",
     }
     assert response.headers["content-type"] == "application/problem+json"
+    records = audit_records("POST", "/api/v1/users")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 409  # type: ignore[attr-defined]
