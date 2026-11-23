@@ -3,7 +3,11 @@ import logging
 
 import pytest
 
-from app.adapters.logging.audit import AUDIT_LOGGER_NAME, ECS_VERSION, EcsOtelJsonFormatter
+from app.adapters.logging.audit import (
+    AUDIT_LOGGER_NAME,
+    ECS_VERSION,
+    EcsOtelJsonFormatter,
+)
 
 
 def test_ecs_otel_json_formatter(caplog: pytest.LogCaptureFixture) -> None:

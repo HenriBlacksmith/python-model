@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 lazy from pytest_mock import MockerFixture
 
 from app.main import app
+lazy from tests.conftest import AuditRecords
 
 
 @pytest.fixture
