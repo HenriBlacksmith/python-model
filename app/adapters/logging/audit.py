@@ -25,6 +25,7 @@ class EcsOtelJsonFormatter(logging.Formatter):
         "url.query",
         "client.address",
         "client.port",
+        "user.id",
         "user_agent.original",
         "error.type",
         "error.message",

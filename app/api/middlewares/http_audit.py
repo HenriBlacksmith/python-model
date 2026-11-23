@@ -1,9 +1,11 @@
+import contextlib
 import logging
 import time
 from typing import Any
 lazy from collections.abc import Awaitable, Callable
 lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+import jwt
 from starlette.datastructures import Headers
 
 from app.adapters.configuration.settings import settings
@@ -58,6 +60,26 @@ class HttpAuditLogMiddleware:
             path.startswith(excluded) for excluded in audit.exclude_paths
         )
 
+    @staticmethod
+    def _user_id(headers: Headers) -> str | None:
+        """Extract the JWT subject without verifying the signature.
+
+        The middleware runs before authentication, so the token can only be
+        decoded permissively; the verified subject is enforced later by the
+        auth dependency.
+        """
+        token: str = headers.get("authorization", "").removeprefix("Bearer ").strip()
+        if not token:
+            return None
+        with contextlib.suppress(jwt.PyJWTError):
+            claims = jwt.decode(
+                jwt=token,
+                options={"verify_signature": False},
+            )
+            subject: str | None = claims.get("sub")
+            return subject
+        return None
+
     def _log_audit(
         self,
         scope: Scope,
@@ -69,13 +91,18 @@ class HttpAuditLogMiddleware:
         headers = Headers(scope=scope)
         client = scope.get("client")
         query: str = scope.get("query_string", b"").decode(errors="replace")
+        forwarded_for: str = headers.get("x-forwarded-for", "")
+        client_ip: str | None = (
+            forwarded_for.split(",")[0].strip() or client[0] if client else None
+        )
         details: dict[str, Any] = {
             "http_request_method": scope["method"],
             "http_request_id": headers.get(CORRELATION_ID_HEADER),
             "http_response_status_code": status_code,
             "url_path": scope["path"],
-            "client_address": client[0] if client else None,
+            "client_address": client_ip,
             "client_port": client[1] if client else None,
+            "user_id": self._user_id(headers=headers),
             "user_agent_original": headers.get("user-agent"),
             "duration_ms": duration_ms,
             "error_type": error_type,
