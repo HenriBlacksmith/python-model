@@ -1,8 +1,6 @@
 import json
 import logging
 
-import pytest
-
 from app.adapters.logging.audit import (
     AUDIT_LOGGER_NAME,
     ECS_VERSION,
@@ -10,21 +8,23 @@ from app.adapters.logging.audit import (
 )
 
 
-def test_ecs_otel_json_formatter(caplog: pytest.LogCaptureFixture) -> None:
-    with caplog.at_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME):
-        logging.getLogger(AUDIT_LOGGER_NAME).info(
-            "GET /api/v1/users 200",
-            extra={
-                "http_request_method": "GET",
-                "http_response_status_code": 200,
-                "url_path": "/api/v1/users",
-                "user_id": "test-subject",
-                "duration_ms": 12,
-            },
-        )
+def test_ecs_otel_json_formatter() -> None:
+    record = logging.LogRecord(
+        name=AUDIT_LOGGER_NAME,
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=17,
+        msg="GET /api/v1/users 200",
+        args=(),
+        exc_info=None,
+    )
+    record.http_request_method = "GET"
+    record.http_response_status_code = 200
+    record.url_path = "/api/v1/users"
+    record.user_id = "test-subject"
+    record.duration_ms = 12
 
-    assert caplog.records
-    formatted = EcsOtelJsonFormatter().format(record=caplog.records[0])
+    formatted = EcsOtelJsonFormatter().format(record=record)
     payload = json.loads(formatted)
 
     assert payload["ecs.version"] == ECS_VERSION
