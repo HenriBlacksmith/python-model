@@ -56,9 +56,7 @@ class HttpAuditLogMiddleware:
         audit = settings.audit
         if not audit.enabled:
             return False
-        return not any(
-            path.startswith(excluded) for excluded in audit.exclude_paths
-        )
+        return not any(path.startswith(excluded) for excluded in audit.exclude_paths)
 
     @staticmethod
     def _user_id(headers: Headers) -> str | None:
@@ -110,5 +108,5 @@ class HttpAuditLogMiddleware:
         }
         if query:
             details["url_query"] = query
-        message = f'{details["http_request_method"]} {scope["path"]} {status_code}'
+        message = f"{details['http_request_method']} {scope['path']} {status_code}"
         audit_logger.info(msg=message, extra=details)
