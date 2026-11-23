@@ -1,0 +1,78 @@
+import logging
+import time
+from typing import Any
+lazy from collections.abc import Awaitable, Callable
+lazy from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from starlette.datastructures import Headers
+
+from app.adapters.logging.audit import AUDIT_LOGGER_NAME
+from app.api.middlewares.correlation_id import CORRELATION_ID_HEADER
+
+audit_logger = logging.getLogger(name=AUDIT_LOGGER_NAME)
+
+
+class HttpAuditLogMiddleware:
+    """Emit one structured audit log record per HTTP request and response."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope=scope, receive=receive, send=send)
+            return
+
+        start = time.perf_counter()
+        status_code = 500
+        error_type: str | None = None
+        error_message: str | None = None
+
+        async def send_wrapper(message: Message) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+            await send(message)
+
+        try:
+            await self.app(scope=scope, receive=receive, send=send_wrapper)
+        except Exception as exc:
+            error_type = type(exc).__name__
+            error_message = str(exc)
+            raise
+        finally:
+            self._log_audit(
+                scope=scope,
+                status_code=status_code,
+                duration_ms=int((time.perf_counter() - start) * 1000),
+                error_type=error_type,
+                error_message=error_message,
+            )
+
+    def _log_audit(
+        self,
+        scope: Scope,
+        status_code: int,
+        duration_ms: int,
+        error_type: str | None,
+        error_message: str | None,
+    ) -> None:
+        headers = Headers(scope=scope)
+        client = scope.get("client")
+        query: str = scope.get("query_string", b"").decode(errors="replace")
+        details: dict[str, Any] = {
+            "http_request_method": scope["method"],
+            "http_request_id": headers.get(CORRELATION_ID_HEADER),
+            "http_response_status_code": status_code,
+            "url_path": scope["path"],
+            "client_address": client[0] if client else None,
+            "client_port": client[1] if client else None,
+            "user_agent_original": headers.get("user-agent"),
+            "duration_ms": duration_ms,
+            "error_type": error_type,
+            "error_message": error_message,
+        }
+        if query:
+            details["url_query"] = query
+        message = f'{details["http_request_method"]} {scope["path"]} {status_code}'
+        audit_logger.info(msg=message, extra=details)
