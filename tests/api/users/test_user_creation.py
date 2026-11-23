@@ -29,9 +29,9 @@ async def test_successful_user_creation(
     assert response.headers["content-type"] == "application/json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 201  # type: ignore[attr-defined]
-    assert records[0].user_id == "test-subject"  # type: ignore[attr-defined]
-    assert records[0].client_address  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 201
+    assert getattr(records[0], "user_id") == "test-subject"
+    assert getattr(records[0], "client_address")
 
 
 @pytest.mark.parametrize(
@@ -74,7 +74,7 @@ async def test_user_creation_with_invalid_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 400  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 400
 
 
 @pytest.mark.usefixtures("test_user")
@@ -101,4 +101,4 @@ async def test_user_creation_with_conflicting_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 409  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 409

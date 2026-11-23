@@ -27,7 +27,7 @@ async def test_successful_user_retrieval(
     assert response.headers["content-type"] == "application/json"
     records = audit_records("GET", f"/api/v1/users/{test_user.id}")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 200  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 200
 
 
 async def test_retrieval_of_non_existent_user(
@@ -48,4 +48,4 @@ async def test_retrieval_of_non_existent_user(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("GET", f"/api/v1/users/{random_id}")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 404  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 404

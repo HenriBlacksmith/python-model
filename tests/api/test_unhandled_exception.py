@@ -54,5 +54,5 @@ async def test_unhandled_exception_returns_problem_json_and_is_logged(
     )
     records = audit_records("GET", f"/api/v1/users/{user_id}")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 500  # type: ignore[attr-defined]
-    assert records[0].error_type == "RuntimeError"  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 500
+    assert getattr(records[0], "error_type") == "RuntimeError"

@@ -191,8 +191,8 @@ def audit_records(caplog: pytest.LogCaptureFixture) -> Iterator[AuditRecords]:
             record
             for record in caplog.records
             if record.name == AUDIT_LOGGER_NAME
-            and record.http_request_method == method  # type: ignore[attr-defined]
-            and record.url_path == path  # type: ignore[attr-defined]
+            and record.__dict__.get("http_request_method") == method
+            and record.__dict__.get("url_path") == path
         ]
 
     try:

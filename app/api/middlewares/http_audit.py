@@ -22,7 +22,7 @@ class HttpAuditLogMiddleware:
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http" or not self._is_audited(path=scope["path"]):
-            await self.app(scope=scope, receive=receive, send=send)
+            await self.app(scope, receive, send)
             return
 
         start = time.perf_counter()
@@ -37,7 +37,7 @@ class HttpAuditLogMiddleware:
             await send(message)
 
         try:
-            await self.app(scope=scope, receive=receive, send=send_wrapper)
+            await self.app(scope, receive, send_wrapper)
         except Exception as exc:
             error_type = type(exc).__name__
             error_message = str(exc)

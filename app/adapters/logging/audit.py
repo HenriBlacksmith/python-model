@@ -53,8 +53,9 @@ class EcsOtelJsonFormatter(logging.Formatter):
             value: str | int | None = getattr(record, attr, None)
             if value is not None:
                 payload[state] = value
-        if hasattr(record, "duration_ms"):
-            payload["duration_ms"] = record.duration_ms  # type: ignore[attr-defined]
+        duration = getattr(record, "duration_ms", None)
+        if isinstance(duration, str | int):
+            payload["duration_ms"] = duration
         return json.dumps(payload, separators=(",", ":"))
 
 

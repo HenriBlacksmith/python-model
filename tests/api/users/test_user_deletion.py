@@ -21,7 +21,7 @@ async def test_successful_user_deletion(
     assert "content-type" not in response.headers
     records = audit_records("DELETE", f"/api/v1/users/{test_user.id}")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 204  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 204
 
 
 async def test_deletion_of_non_existing_user(
@@ -45,4 +45,4 @@ async def test_deletion_of_non_existing_user(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("DELETE", f"/api/v1/users/{non_existent_user_id}")
     assert len(records) == 1
-    assert records[0].http_response_status_code == 404  # type: ignore[attr-defined]
+    assert getattr(records[0], "http_response_status_code") == 404
