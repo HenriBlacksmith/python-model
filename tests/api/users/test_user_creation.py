@@ -30,6 +30,8 @@ async def test_successful_user_creation(
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
     assert records[0].http_response_status_code == 201  # type: ignore[attr-defined]
+    assert records[0].user_id == "test-subject"  # type: ignore[attr-defined]
+    assert records[0].client_address  # type: ignore[attr-defined]
 
 
 @pytest.mark.parametrize(

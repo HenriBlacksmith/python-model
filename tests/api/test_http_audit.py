@@ -18,6 +18,7 @@ def test_ecs_otel_json_formatter(caplog: pytest.LogCaptureFixture) -> None:
                 "http_request_method": "GET",
                 "http_response_status_code": 200,
                 "url_path": "/api/v1/users",
+                "user_id": "test-subject",
                 "duration_ms": 12,
             },
         )
@@ -33,4 +34,5 @@ def test_ecs_otel_json_formatter(caplog: pytest.LogCaptureFixture) -> None:
     assert payload["http.request.method"] == "GET"
     assert payload["http.response.status_code"] == 200
     assert payload["url.path"] == "/api/v1/users"
+    assert payload["user.id"] == "test-subject"
     assert payload["event.dataset"] == "python-model.audit.http"
