@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Protocol
 from uuid import uuid4
-lazy from collections.abc import AsyncGenerator, Callable, Coroutine
+lazy from collections.abc import AsyncGenerator, Callable, Coroutine, Iterator
 
 import jwt
 import pytest
@@ -176,9 +176,15 @@ def make_token(rsa_private_key: rsa.RSAPrivateKey) -> TokenFactory:
 
 
 @pytest.fixture
-def audit_records(caplog: pytest.LogCaptureFixture) -> AuditRecords:
-    """Return the audit log records matching an HTTP method and path."""
+def audit_records(caplog: pytest.LogCaptureFixture) -> Iterator[AuditRecords]:
+    """Return the audit log records matching an HTTP method and path.
+
+    The capture handler is attached directly to the audit logger because
+    propagation to the root logger is not guaranteed in this setup.
+    """
     caplog.set_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME)
+    logger = logging.getLogger(AUDIT_LOGGER_NAME)
+    logger.addHandler(caplog.handler)
 
     def _find(method: str, path: str) -> list[logging.LogRecord]:
         return [
@@ -189,7 +195,10 @@ def audit_records(caplog: pytest.LogCaptureFixture) -> AuditRecords:
             and record.url_path == path  # type: ignore[attr-defined]
         ]
 
-    return _find
+    try:
+        yield _find
+    finally:
+        logger.removeHandler(caplog.handler)
 
 
 @pytest.fixture
