@@ -184,6 +184,9 @@ def audit_records(caplog: pytest.LogCaptureFixture) -> Iterator[AuditRecords]:
     """
     caplog.set_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME)
     logger = logging.getLogger(AUDIT_LOGGER_NAME)
+    # The OTLP auto-configuration may silence loggers globally: restore them.
+    logging.disable(level=logging.NOTSET)
+    logger.disabled = False
     logger.addHandler(caplog.handler)
 
     def _find(method: str, path: str) -> list[logging.LogRecord]:
