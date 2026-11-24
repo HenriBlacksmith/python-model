@@ -1,6 +1,8 @@
 import json
 import logging
 
+lazy import pytest
+
 from app.adapters.logging.audit import (
     AUDIT_LOGGER_NAME,
     ECS_VERSION,
