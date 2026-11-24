@@ -29,8 +29,8 @@ async def test_successful_user_creation(
     assert response.headers["content-type"] == "application/json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 201
-    assert records[0].user_id  # ty: ignore[missing-attribute] == "test-subject"
+    assert records[0].http_response_status_code == 201  # ty: ignore[missing-attribute]
+    assert records[0].user_id == "test-subject"  # ty: ignore[missing-attribute]
     assert records[0].client_address  # ty: ignore[missing-attribute]
 
 
@@ -74,7 +74,7 @@ async def test_user_creation_with_invalid_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 400
+    assert records[0].http_response_status_code == 400  # ty: ignore[missing-attribute]
 
 
 @pytest.mark.usefixtures("test_user")
@@ -101,4 +101,4 @@ async def test_user_creation_with_conflicting_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("POST", "/api/v1/users")
     assert len(records) == 1
-    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 409
+    assert records[0].http_response_status_code == 409  # ty: ignore[missing-attribute]
