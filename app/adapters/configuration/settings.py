@@ -31,10 +31,18 @@ class DatabaseSettings(BaseSettings):
     pool_recycle: int = 3600  # Recycle connections every hour
 
 
+class AuditLoggingSettings(BaseSettings):
+    enabled: bool = True
+    exclude_paths: list[str] = []
+
+
 class AppSettings(BaseSettings):
     api: Annotated[APISettings, Field(alias="api")]
     auth: Annotated[AuthenticationSettings, Field(alias="auth")]
     database: Annotated[DatabaseSettings, Field(alias="database")]
+    audit: Annotated[AuditLoggingSettings, Field(alias="audit")] = (
+        AuditLoggingSettings()
+    )
 
     @classmethod
     def settings_customise_sources(

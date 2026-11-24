@@ -6,12 +6,14 @@ import pytest
 lazy from httpx2 import AsyncClient
 
 from app.adapters.database.models import User
+lazy from tests.conftest import AuditRecords
 
 
 async def test_successful_user_update(
     test_client: AsyncClient,
     auth_headers: dict[str, str],
     test_user: User,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.put(
         f"/api/v1/users/{test_user.id}",
@@ -29,12 +31,16 @@ async def test_successful_user_update(
         "updatedAt": ANY,
     }
     assert response.headers["content-type"] == "application/json"
+    records = audit_records("PUT", f"/api/v1/users/{test_user.id}")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 200  # ty: ignore[missing-attribute]
 
 
 async def test_user_update_with_conflicting_username(
     test_client: AsyncClient,
     auth_headers: dict[str, str],
     create_test_users: Callable[[list[str]], Coroutine[None, None, list[User]]],
+    audit_records: AuditRecords,
 ) -> None:
     users = await create_test_users(["testuser", "otheruser"])
 
@@ -54,6 +60,9 @@ async def test_user_update_with_conflicting_username(
         "instance": f"/api/v1/users/{users[1].id}",
     }
     assert response.headers["content-type"] == "application/problem+json"
+    records = audit_records("PUT", f"/api/v1/users/{users[1].id}")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 409  # ty: ignore[missing-attribute]
 
 
 @pytest.mark.parametrize(
@@ -71,6 +80,7 @@ async def test_user_update_with_invalid_username(
     test_user: User,
     invalid_username: str,
     expected_error_detail: str,
+    audit_records: AuditRecords,
 ) -> None:
     response = await test_client.put(
         f"/api/v1/users/{test_user.id}",
@@ -94,10 +104,15 @@ async def test_user_update_with_invalid_username(
         ],
     }
     assert response.headers["content-type"] == "application/problem+json"
+    records = audit_records("PUT", f"/api/v1/users/{test_user.id}")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 400  # ty: ignore[missing-attribute]
 
 
 async def test_update_of_non_existing_user(
-    test_client: AsyncClient, auth_headers: dict[str, str]
+    test_client: AsyncClient,
+    auth_headers: dict[str, str],
+    audit_records: AuditRecords,
 ) -> None:
     non_existent_user_id = uuid4()
 
@@ -117,3 +132,6 @@ async def test_update_of_non_existing_user(
         "instance": f"/api/v1/users/{non_existent_user_id}",
     }
     assert response.headers["content-type"] == "application/problem+json"
+    records = audit_records("PUT", f"/api/v1/users/{non_existent_user_id}")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 404  # ty: ignore[missing-attribute]

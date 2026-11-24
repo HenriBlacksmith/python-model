@@ -18,14 +18,18 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.adapters.configuration.settings import settings
+from app.adapters.logging.audit import configure_audit_logging
 from app.api.handlers import (
     http_exception_handler,
     unhandled_exception_handler,
     validation_exception_handler,
 )
 from app.api.middlewares.correlation_id import CorrelationIdMiddleware
+from app.api.middlewares.http_audit import HttpAuditLogMiddleware
 from app.api.routes.router import router
 from app.core.constants import constants
+
+configure_audit_logging()
 
 
 class DatabaseState(TypedDict):
@@ -61,7 +65,7 @@ async def _database_check(
 ) -> None:
     while True:
         await asyncio.sleep(delay=5)
-        await _check_database(session_factory, database)
+        await _check_database(session_factory=session_factory, database=database)
 
 
 def configure_openapi(app: FastAPI) -> None:
@@ -134,6 +138,7 @@ def _get_application() -> FastAPI:
         ),
     )
     app.include_router(router=router)
+    app.add_middleware(HttpAuditLogMiddleware)
     app.add_middleware(CorrelationIdMiddleware)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # ty: ignore[invalid-argument-type]
     app.add_exception_handler(HTTPException, http_exception_handler)  # ty: ignore[invalid-argument-type]

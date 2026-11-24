@@ -8,6 +8,7 @@ lazy from pytest_mock import MockerFixture
 
 from app.core.controllers.users import UsersController
 from app.main import app
+lazy from tests.conftest import AuditRecords
 
 
 @pytest.fixture
@@ -26,6 +27,7 @@ async def test_unhandled_exception_returns_problem_json_and_is_logged(
     test_client_with_raised_app_exceptions: AsyncClient,
     auth_headers: dict[str, str],
     mocker: MockerFixture,
+    audit_records: AuditRecords,
 ) -> None:
     user_id = uuid4()
     error = RuntimeError("Unexpected error")
@@ -50,3 +52,7 @@ async def test_unhandled_exception_returns_problem_json_and_is_logged(
         f"/api/v1/users/{user_id}",
         exc_info=error,
     )
+    records = audit_records("GET", f"/api/v1/users/{user_id}")
+    assert len(records) == 1
+    assert records[0].http_response_status_code == 500  # ty: ignore[missing-attribute]
+    assert records[0].error_type == "RuntimeError"  # ty: ignore[missing-attribute]

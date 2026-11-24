@@ -1,9 +1,10 @@
+import logging
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Protocol
 from uuid import uuid4
-lazy from collections.abc import AsyncGenerator, Callable, Coroutine
+lazy from collections.abc import AsyncGenerator, Callable, Coroutine, Iterator
 
 import jwt
 import pytest
@@ -23,6 +24,7 @@ from sqlalchemy.ext.asyncio import (
 lazy from pytest_mock import MockerFixture
 
 from app.adapters.configuration.settings import AppSettings, settings
+from app.adapters.logging.audit import AUDIT_LOGGER_NAME
 from app.api.dependencies.auth import jwks_client
 from app.main import app
 lazy from app.adapters.database.models import User
@@ -35,6 +37,9 @@ class TokenFactory(Protocol):
         expires_at: datetime | None = None,
         audience: str | None = None,
     ) -> str: ...
+
+
+AuditRecords = Callable[[str, str], list[logging.LogRecord]]
 
 
 @pytest.fixture(scope="session")
@@ -168,6 +173,35 @@ def make_token(rsa_private_key: rsa.RSAPrivateKey) -> TokenFactory:
         return jwt.encode(claims, rsa_private_key, algorithm="RS256")
 
     return _make_token
+
+
+@pytest.fixture
+def audit_records(caplog: pytest.LogCaptureFixture) -> Iterator[AuditRecords]:
+    """Return the audit log records matching an HTTP method and path.
+
+    The capture handler is attached directly to the audit logger because
+    propagation to the root logger is not guaranteed in this setup.
+    """
+    caplog.set_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME)
+    logger = logging.getLogger(AUDIT_LOGGER_NAME)
+    # The OTLP auto-configuration may silence loggers globally: restore them.
+    logging.disable(level=logging.NOTSET)
+    logger.disabled = False
+    logger.addHandler(caplog.handler)
+
+    def _find(method: str, path: str) -> list[logging.LogRecord]:
+        return [
+            record
+            for record in caplog.records
+            if record.name == AUDIT_LOGGER_NAME
+            and record.__dict__.get("http_request_method") == method
+            and record.__dict__.get("url_path") == path
+        ]
+
+    try:
+        yield _find
+    finally:
+        logger.removeHandler(caplog.handler)
 
 
 @pytest.fixture
