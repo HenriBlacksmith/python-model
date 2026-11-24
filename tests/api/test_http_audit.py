@@ -36,3 +36,11 @@ def test_ecs_otel_json_formatter() -> None:
     assert payload["url.path"] == "/api/v1/users"
     assert payload["user.id"] == "test-subject"
     assert payload["event.dataset"] == "python-model.audit.http"
+
+def test_audit_logger_emits_to_caplog(caplog: pytest.LogCaptureFixture) -> None:
+    # Diagnostic: a direct emission must be captured without any fixture magic.
+    with caplog.at_level(level=logging.INFO, logger=AUDIT_LOGGER_NAME):
+        logging.getLogger(AUDIT_LOGGER_NAME).info("diagnostic message")
+
+    assert caplog.records
+    assert caplog.records[0].name == AUDIT_LOGGER_NAME
