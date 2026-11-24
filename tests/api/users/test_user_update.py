@@ -33,7 +33,7 @@ async def test_successful_user_update(
     assert response.headers["content-type"] == "application/json"
     records = audit_records("PUT", f"/api/v1/users/{test_user.id}")
     assert len(records) == 1
-    assert getattr(records[0], "http_response_status_code") == 200
+    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 200
 
 
 async def test_user_update_with_conflicting_username(
@@ -62,7 +62,7 @@ async def test_user_update_with_conflicting_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("PUT", f"/api/v1/users/{users[1].id}")
     assert len(records) == 1
-    assert getattr(records[0], "http_response_status_code") == 409
+    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 409
 
 
 @pytest.mark.parametrize(
@@ -106,7 +106,7 @@ async def test_user_update_with_invalid_username(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("PUT", f"/api/v1/users/{test_user.id}")
     assert len(records) == 1
-    assert getattr(records[0], "http_response_status_code") == 400
+    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 400
 
 
 async def test_update_of_non_existing_user(
@@ -134,4 +134,4 @@ async def test_update_of_non_existing_user(
     assert response.headers["content-type"] == "application/problem+json"
     records = audit_records("PUT", f"/api/v1/users/{non_existent_user_id}")
     assert len(records) == 1
-    assert getattr(records[0], "http_response_status_code") == 404
+    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == 404

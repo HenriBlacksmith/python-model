@@ -36,8 +36,8 @@ def _assert_audited(
 ) -> None:
     records = audit_records(method, url)
     assert len(records) == 1
-    assert getattr(records[0], "http_response_status_code") == expected_status
-    assert getattr(records[0], "client_address")
+    assert records[0].http_response_status_code  # ty: ignore[missing-attribute] == expected_status
+    assert records[0].client_address  # ty: ignore[missing-attribute]
 
 
 @pytest.mark.parametrize(("method", "url", "has_body"), ROUTES)
@@ -192,4 +192,4 @@ async def test_valid_token_grants_access(
     assert response.status_code == 201
     _assert_audited(audit_records, "post", "/api/v1/users", 201)
     records = audit_records("POST", "/api/v1/users")
-    assert getattr(records[0], "user_id") == "test-subject"
+    assert records[0].user_id  # ty: ignore[missing-attribute] == "test-subject"
